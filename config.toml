@@ -1,0 +1,26 @@
+# Harness paths. Draft values: verify each against current docs (HANDOFF task 1).
+# detect: the harness is used on this device only if this folder exists.
+# instructions_method: "import" adds an @ import line; "symlink" links the file.
+
+[harness.claude-code]
+detect = "~/.claude"
+skills_dir = "~/.claude/skills"
+instructions_file = "~/.claude/CLAUDE.md"
+instructions_method = "import"
+
+[harness.codex]
+detect = "~/.codex"
+skills_dir = "~/.agents/skills"
+instructions_file = "~/.codex/AGENTS.md"
+instructions_method = "symlink"
+
+[harness.gemini-cli]
+detect = "~/.gemini"
+skills_dir = "~/.gemini/skills"
+instructions_file = "~/.gemini/GEMINI.md"
+instructions_method = "symlink"
+
+[harness.cursor]
+detect = "~/.cursor"
+skills_dir = "~/.cursor/skills"
+# No global instructions file assumed; verify whether Cursor supports one.

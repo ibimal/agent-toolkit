@@ -1,0 +1,24 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          # The lowest version that bin/toolkit supports. Local runs cover
+          # newer versions.
+          python-version: "3.11"
+      - name: Validate skills, config, and style file
+        run: bin/toolkit check
+      - name: Run tests
+        run: python3 -m unittest discover -s tests

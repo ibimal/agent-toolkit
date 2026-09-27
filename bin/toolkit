@@ -22,6 +22,7 @@ if sys.version_info < (3, 11):
     )
 
 import argparse
+import os
 import re
 import subprocess
 import tomllib
@@ -61,6 +62,34 @@ REQUIRED_FRONTMATTER_KEYS = {"name", "description"}
 # Length limits from the Agent Skills specification (agentskills.io).
 MAX_FIELD_LENGTHS = {"name": 64, "description": 1024, "compatibility": 500}
 MAX_SKILL_MD_LINES = 500
+# Characters that a value without quotes cannot start with in YAML.
+YAML_INDICATORS = "[]{}*&!%@`,"
+# A sibling reference in a skill, such as "(use condense)" or
+# "(use plain-restate, condense, or deepen)".
+SKILL_REF_RE = re.compile(r"\(use ([^)]*)\)")
+MARKDOWN_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+
+# The repo is public, so check flags text that looks private in any text
+# file. It prints the kind and the location, never the matched text, so
+# a secret does not reach a CI log.
+LEAK_PATTERNS = [
+    (
+        "an email address",
+        re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}"),
+    ),
+    ("a home folder path", re.compile(r"(?<![\w.~-])(?:/Users|/home)/[A-Za-z0-9._-]+")),
+    (
+        "an access token",
+        re.compile(
+            r"\b(?:gh[oprsu]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}"
+            r"|sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|xox[abprs]-[A-Za-z0-9-]{10,})"
+        ),
+    ),
+    ("a private key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
+]
+# Email addresses that are safe to publish.
+SAFE_EMAIL_RE = re.compile(r"^git@github\.com$|noreply|@example\.(?:com|org|net)$", re.I)
+LEAK_SCAN_SKIP_DIRS = {".git", "__pycache__"}
 
 
 class Conflict(Exception):
@@ -197,9 +226,26 @@ def _strip_quotes(value: str) -> str:
     return value
 
 
-def _parse_frontmatter(text: str) -> dict[str, str] | None:
-    """Return the top-level frontmatter fields as key -> text, or None if
-    the file has no frontmatter block.
+def _plain_value_issues(key: str, value: str, first_line: bool) -> list[str]:
+    """Return the ways a value without quotes breaks YAML. A YAML parser
+    rejects such a value or cuts it short, and a tool that reads the skill
+    may then skip the skill without an error."""
+    reasons = []
+    if ": " in value or value.endswith(":"):
+        reasons.append("contains ': '")
+    if " #" in value:
+        reasons.append("contains ' #', which starts a YAML comment")
+    if first_line and value[0] in YAML_INDICATORS:
+        reasons.append(f"starts with '{value[0]}'")
+    return [
+        f"'{key}' is not quoted and {reason}. Put the value in double quotes."
+        for reason in reasons
+    ]
+
+
+def _parse_frontmatter(text: str) -> tuple[dict[str, str], list[str]] | None:
+    """Return the top-level frontmatter fields as key -> text, plus YAML
+    issues, or None if the file has no frontmatter block.
 
     This reads plain, quoted, folded (>) and literal (|) values, including
     values that continue on indented lines. It reads a nested mapping,
@@ -212,13 +258,17 @@ def _parse_frontmatter(text: str) -> dict[str, str] | None:
     if end is None:
         return None
     fields: dict[str, str] = {}
+    yaml_issues: list[str] = []
     current = None  # the key whose value continues on indented lines
+    plain = False  # True if that value has no quotes and no block indicator
     for line in lines[1:end]:
         if not line.strip():
             continue
         if line[0] in " \t":
             if current is not None:
                 fields[current] = (fields[current] + " " + line.strip()).strip()
+                if plain:
+                    yaml_issues += _plain_value_issues(current, line.strip(), False)
             continue
         m = re.match(r"^([A-Za-z0-9_-]+):\s*(.*)$", line)
         if not m:
@@ -226,15 +276,67 @@ def _parse_frontmatter(text: str) -> dict[str, str] | None:
             continue
         key, value = m.group(1), m.group(2).strip()
         if BLOCK_SCALAR_RE.match(value):
-            fields[key], current = "", key
+            fields[key], current, plain = "", key, False
         elif value:
             fields[key], current = _strip_quotes(value), key
+            plain = value[0] not in "\"'"
+            if plain:
+                yaml_issues += _plain_value_issues(key, value, True)
         else:
             fields[key], current = "", None  # a nested mapping, such as metadata
-    return fields
+    return fields, yaml_issues
 
 
-def check_skill(folder: Path) -> list[str]:
+def _local_links(text: str) -> list[str]:
+    """Return the Markdown link targets in text that name local files."""
+    targets = []
+    for target in MARKDOWN_LINK_RE.findall(text):
+        target = target.split("#", 1)[0]
+        # Skip an anchor within the page, and a URL such as https: or mailto:.
+        if target and not re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", target):
+            targets.append(target)
+    return targets
+
+
+def _link_issues(folder: Path, text: str) -> list[str]:
+    """Check the AGENTS.md rule "keep file references one level deep".
+    Each local link in SKILL.md must name a file inside the skill folder,
+    and a linked Markdown file must not link to more local files."""
+    issues = []
+    root = folder.resolve()
+    for target in _local_links(text):
+        path = (folder / target).resolve()
+        if not path.is_relative_to(root):
+            issues.append(f"link '{target}' points outside the skill folder")
+        elif not path.is_file():
+            issues.append(f"link '{target}' points to a missing file")
+        elif path.suffix == ".md":
+            try:
+                nested = _local_links(path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError):
+                nested = []
+            if nested:
+                issues.append(
+                    f"'{target}' links to more local files ({', '.join(nested)}). "
+                    "Keep file references one level deep."
+                )
+    return issues
+
+
+def _skill_refs(text: str) -> list[str]:
+    """Return the skill names in sibling references such as
+    "(use plain-restate, condense, or deepen)"."""
+    names = []
+    for group in SKILL_REF_RE.findall(text):
+        for token in re.split(r",\s*|\s+or\s+", group):
+            token = token.strip()
+            token = token[3:] if token.startswith("or ") else token
+            if NAME_RE.match(token):
+                names.append(token)
+    return names
+
+
+def check_skill(folder: Path, known_skills: set[str]) -> list[str]:
     issues: list[str] = []
     if not NAME_RE.match(folder.name):
         issues.append(
@@ -251,10 +353,12 @@ def check_skill(folder: Path) -> list[str]:
         issues.append(
             f"SKILL.md has {line_count} lines, over the {MAX_SKILL_MD_LINES}-line limit"
         )
-    fields = _parse_frontmatter(text)
-    if fields is None:
+    parsed = _parse_frontmatter(text)
+    if parsed is None:
         issues.append("SKILL.md has no valid --- frontmatter block")
         return issues
+    fields, yaml_issues = parsed
+    issues.extend(yaml_issues)
     for required in sorted(REQUIRED_FRONTMATTER_KEYS):
         if not fields.get(required):
             issues.append(f"frontmatter is missing required field '{required}'")
@@ -269,7 +373,34 @@ def check_skill(folder: Path) -> list[str]:
         issues.append(
             f"frontmatter name '{fields['name']}' does not match folder name '{folder.name}'"
         )
+    for ref in _skill_refs(text):
+        if ref not in known_skills:
+            issues.append(f"refers to skill '{ref}', which is not in skills/")
+    issues.extend(_link_issues(folder, text))
     return issues
+
+
+def leak_issues() -> list[str]:
+    """Scan every text file in the repo for text that looks private."""
+    issues = set()
+    for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
+        dirnames[:] = [d for d in dirnames if d not in LEAK_SCAN_SKIP_DIRS]
+        for filename in filenames:
+            path = Path(dirpath) / filename
+            if path.is_symlink():
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue  # a binary or unreadable file
+            where = path.relative_to(REPO_ROOT)
+            for lineno, line in enumerate(text.splitlines(), 1):
+                for kind, pattern in LEAK_PATTERNS:
+                    for m in pattern.finditer(line):
+                        if kind == "an email address" and SAFE_EMAIL_RE.search(m.group()):
+                            continue
+                        issues.add(f"{where}:{lineno} has what looks like {kind}")
+    return sorted(issues)
 
 
 def _config_issues() -> list[str]:
@@ -291,7 +422,9 @@ def _repo_skill_names() -> list[str]:
 
 
 def run_check() -> bool:
-    results = [(folder.name, check_skill(folder)) for folder in _skill_folders()]
+    folders = _skill_folders()
+    known_skills = {folder.name for folder in folders}
+    results = [(folder.name, check_skill(folder, known_skills)) for folder in folders]
     results.append(("config.toml", _config_issues()))
     results.append(
         (
@@ -299,6 +432,7 @@ def run_check() -> bool:
             [] if STYLE_FILE.is_file() else ["file is missing"],
         )
     )
+    results.append(("leak scan", leak_issues()))
     for label, issues in results:
         print(f"[FAIL] {label}" if issues else f"[OK]   {label}")
         for issue in issues:

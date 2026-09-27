@@ -42,5 +42,6 @@ CLI links them into each agent harness on each device.
 
 - Deferred features are listed in README.md with their triggers. Do not
   add them unless a trigger has occurred.
-- Write prose in this repo according to `instructions/technical-clarity.md`.
+- Write prose in this repo according to `instructions/technical-clarity.md`,
+  and use the terms in `CONTEXT.md`.
 - Run `bin/toolkit check` before each commit.

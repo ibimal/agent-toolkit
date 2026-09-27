@@ -9,6 +9,7 @@ Run from the repo root: python3 -m unittest discover -s tests
 """
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -375,6 +376,74 @@ class CheckTest(ToolkitTestCase):
         self.assertIn("non-spec fields: version", out)
         self.assertIn("[OK]   with-metadata", out)
 
+    def test_values_that_break_yaml(self):
+        # A YAML parser rejects or cuts short the first five. The last two
+        # are valid, because quotes and block scalars may hold ': '.
+        cases = {
+            "colon": "description: Use when: the user is lost.\n",
+            "trailing-colon": "description: Use when:\n",
+            "comment": "description: Shorten it #fast\n",
+            "indicator": "description: *starred\n",
+            "continued-colon": "description: Restate it.\n  Use when: lost.\n",
+            "quoted": 'description: "Use when: the user is lost."\n',
+            "folded": "description: >\n  Use when: the user is lost.\n",
+        }
+        for name, description in cases.items():
+            self.add_skill(name, f"---\nname: {name}\n{description}---\n")
+
+        result = self.toolkit("check")
+        self.assertEqual(result.returncode, 1)
+        for name in ("colon", "trailing-colon", "comment", "indicator", "continued-colon"):
+            self.assertIn(f"[FAIL] {name}", result.stdout)
+        for name in ("quoted", "folded"):
+            self.assertIn(f"[OK]   {name}", result.stdout)
+        self.assertIn("Put the value in double quotes", result.stdout)
+
+    def test_leak_scan(self):
+        # Built from parts, so this file does not trip the real repo's scan.
+        email = "alice" + "@" + "corp-mail.io"
+        home = "/Us" + "ers/alice/notes"
+        token = "gh" + "p_" + "a1B2" * 9
+        (self.repo / "notes.md").write_text(
+            f"Mail {email}.\nSee {home}.\nToken {token}\n"
+            "Safe: git@github.com, 1+me@users.noreply.github.com, "
+            "bob@example.com, ~/.config/home/x\n"
+        )
+        result = self.toolkit("check")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("notes.md:1 has what looks like an email address", result.stdout)
+        self.assertIn("notes.md:2 has what looks like a home folder path", result.stdout)
+        self.assertIn("notes.md:3 has what looks like an access token", result.stdout)
+        self.assertNotIn("notes.md:4", result.stdout)
+        # The report names the kind and place, never the matched text.
+        for secret in (email, home, token):
+            self.assertNotIn(secret, result.stdout)
+
+    def test_references_and_links(self):
+        self.add_skill("gamma", skill_md("gamma", "Not for this (use alpha or ghost)."))
+        self.add_skill(
+            "delta",
+            skill_md("delta")
+            + "See [ref](references/ref.md), [gone](missing.md), "
+            "[up](../alpha/SKILL.md), and [web](https://example.com/page).\n",
+        )
+        (self.repo / "skills" / "delta" / "references").mkdir()
+        (self.repo / "skills" / "delta" / "references" / "ref.md").write_text(
+            "More in [deep](deep.md).\n"
+        )
+        self.add_skill("epsilon", skill_md("epsilon") + "See [ref](references/ref.md#part).\n")
+        (self.repo / "skills" / "epsilon" / "references").mkdir()
+        (self.repo / "skills" / "epsilon" / "references" / "ref.md").write_text("Done.\n")
+
+        out = self.toolkit("check").stdout
+        self.assertIn("refers to skill 'ghost'", out)
+        self.assertNotIn("refers to skill 'alpha'", out)
+        self.assertIn("link 'missing.md' points to a missing file", out)
+        self.assertIn("link '../alpha/SKILL.md' points outside the skill folder", out)
+        self.assertIn("'references/ref.md' links to more local files (deep.md)", out)
+        self.assertNotIn("example.com", out)
+        self.assertIn("[OK]   epsilon", out)
+
 
 class DoctorTest(ToolkitTestCase):
     def test_clean_install_has_no_problems_and_notes_duplicates(self):
@@ -413,6 +482,45 @@ class DoctorTest(ToolkitTestCase):
         result = self.toolkit("doctor")
         self.assertEqual(result.returncode, 1)
         self.assertIn("both finds 'alpha'", result.stdout)
+
+
+class RepoDocsTest(unittest.TestCase):
+    """README.md and AGENTS.md state facts that the repo can confirm, such
+    as its layout and its commands. These tests keep the docs in step."""
+
+    readme = (REAL_REPO / "README.md").read_text()
+
+    def section(self, heading: str) -> str:
+        return self.readme.split(f"## {heading}\n", 1)[1].split("\n## ", 1)[0]
+
+    def test_layout_paths_exist(self):
+        block = self.section("Layout").split("```")[1]
+        found, missing, stack = [], [], []
+        for line in block.splitlines():
+            m = re.match(r"^((?:│   |    )*)[├└]── (.+)$", re.sub(r"\s+#.*$", "", line))
+            if not m:
+                continue
+            depth = len(m.group(1)) // 4
+            stack = stack[:depth] + [m.group(2).strip().rstrip("/")]
+            path = "/".join(stack)
+            found.append(path)
+            if not (REAL_REPO / path).exists():
+                missing.append(path)
+        self.assertGreaterEqual(len(found), 10)
+        self.assertEqual(missing, [])
+
+    def test_commands_match_the_cli(self):
+        help_text = subprocess.run(
+            [sys.executable, str(REAL_REPO / "bin" / "toolkit"), "--help"],
+            capture_output=True,
+            text=True,
+        ).stdout
+        commands = set(re.search(r"\{([a-z,]+)\}", help_text).group(1).split(","))
+        table = set(re.findall(r"^\| `([a-z-]+)`", self.section("Commands"), re.M))
+        self.assertEqual(table, commands)
+        agents = (REAL_REPO / "AGENTS.md").read_text()
+        for command in commands:
+            self.assertIn(f"`{command}`", agents)
 
 
 if __name__ == "__main__":

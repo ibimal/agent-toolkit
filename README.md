@@ -10,8 +10,9 @@ agent-toolkit/
 ├── README.md
 ├── LICENSE                    # MIT
 ├── AGENTS.md                  # rules for agents working on this repo
+├── CONTEXT.md                 # glossary
 ├── CLAUDE.md                  # imports AGENTS.md for Claude Code
-├── config.toml                # harness paths and link methods
+├── config.toml                # harness paths and instructions methods
 ├── bin/toolkit                # install | sync | uninstall | doctor | check
 ├── instructions/
 │   └── technical-clarity.md   # always-on style rules
@@ -24,7 +25,7 @@ agent-toolkit/
 
 | Command     | Effect                                                        | Writes |
 |-------------|---------------------------------------------------------------|--------|
-| `check`     | Validate skills, `config.toml`, and the style file.           | No     |
+| `check`     | Validate skills, `config.toml`, and the style file. Scan for leaks. | No |
 | `doctor`    | Report link problems and duplicate skill names. Exit 1 on a problem. | No |
 | `install`   | Run `check`, link skills and instructions, prune stale links. | Home   |
 | `sync`      | `git pull --ff-only`, then `install`.                         | Repo, home |
@@ -96,6 +97,6 @@ then run `bin/toolkit check`.
 | `build` and `dist/`       | You upload skills to chat apps regularly               |
 | Profiles per device       | About 15+ skills, or a device needs a subset           |
 | Evals                     | You run the style comparison test                      |
-| Plugin manifests          | You need a managed install on a machine without a clone |
+| Plugin manifests          | You need a managed install on a device without a clone |
 | Decision records          | Someone else contributes                               |
 | Python 3.9 support (fallback parser for the TOML that `config.toml` uses) | A device you use cannot install Python 3.11+ |

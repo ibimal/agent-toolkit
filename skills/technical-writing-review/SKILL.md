@@ -1,6 +1,6 @@
 ---
 name: technical-writing-review
-description: Review technical prose, such as docs, READMEs, design documents, or code comments, against the always-on technical-clarity style rules, and report specific issues with rewrites. Use when the user asks to review, edit, or improve technical writing. Not for rewriting your own previous response (use plain-restate, condense, or deepen).
+description: Review technical prose, such as docs, READMEs, design documents, or code comments, against the always-on style rules, and report specific issues with rewrites. Use when the user asks to review, edit, or improve technical writing. Not for rewriting your own previous response (use plain-restate, condense, or deepen).
 ---
 
 # Technical writing review

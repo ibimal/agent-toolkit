@@ -1,11 +1,11 @@
 # Harness paths, verified against current docs (2026-09-26).
 #
 # detect: the harness is used on this device only if this folder exists.
-# skills_dir: personal Agent Skills directory. Omit entirely if the
+# skills_dir: the harness's personal skills folder. Omit entirely if the
 #   harness has no Agent Skills support (see code-puppy below) --
 #   `install` then skips skill-linking for that harness.
 # instructions_method:
-#   "import" adds an `@` import line inside a marker block `install` owns,
+#   "import" adds an `@` import line inside a managed block `install` owns,
 #     in an instructions file that also holds the harness's own content.
 #     Used only where the harness supports `@`-style imports (Claude Code).
 #     If the file is a symlink that this repo does not own (for example,

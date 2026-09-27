@@ -33,10 +33,16 @@ dotfiles, then reduced to a good default with YAGNI.
    (a) remove "Use a list when its structure makes the information easier
    to understand or scan."; (b) in the noun-stack rule, change "unclear"
    to "unclear to that reader".
-2. Keep the name `plain-restate`?
-3. Which harnesses do I use on each device? `config.toml` lists four.
+2. Keep the name `plain-restate`? Decided on 2026-09-27: keep it. The
+   reason is in README.md.
+3. Which harnesses do I use on each device? `config.toml` lists three:
+   claude-code, copilot-cli, and code-puppy.
 4. Codex reads `~/.agents/skills`, and other tools may read it too. Check
-   whether this causes duplicate skill listings.
+   whether this causes duplicate skill listings. Answered on 2026-09-27:
+   Copilot CLI and VS Code read `~/.agents/skills`, so `install` never
+   writes there. VS Code still finds each skill twice, in
+   `~/.claude/skills` and `~/.copilot/skills`. `doctor` reports both
+   cases. The details are in `config.toml`.
 5. Where will the remote live (for example, a private GitHub repo)?
 
 ## Tasks, in order

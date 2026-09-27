@@ -71,6 +71,8 @@ then run `bin/toolkit check`.
   rules and holds no copy.
 - A vendored skill records its source in `metadata` and keeps the upstream
   LICENSE file.
+- The restate skill is named `plain-restate`, not `clarify`, because
+  models read "clarify" as "ask clarifying questions".
 - The CLI uses the Python standard library only, so a new device needs no
   setup beyond Python 3.11+.
 - `install` never replaces a skill folder, and never writes through a

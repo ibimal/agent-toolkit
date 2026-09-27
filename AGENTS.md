@@ -33,6 +33,8 @@ CLI links them into each agent harness on each device.
   `.pre-toolkit`. `uninstall` restores these backups.
 - Never replace a skill folder, or write through a symlink, that did not
   come from this repo. Report a conflict, skip that item, and exit 1.
+- This repo is public. Never add credentials, tokens, or work-specific
+  content, such as internal project names, URLs, or people.
 - Test writing commands against a temporary HOME, for example
   `HOME=$(mktemp -d)`. Never test against the real home folder.
 

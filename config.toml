@@ -1,26 +1,79 @@
-# Harness paths. Draft values: verify each against current docs (HANDOFF task 1).
+# Harness paths, verified against current docs (HANDOFF task 1, 2026-09-26).
+#
 # detect: the harness is used on this device only if this folder exists.
-# instructions_method: "import" adds an @ import line; "symlink" links the file.
+# skills_dir: personal Agent Skills directory. Omit entirely if the
+#   harness has no Agent Skills support (see code-puppy below) --
+#   `install` then skips skill-linking for that harness.
+# instructions_method:
+#   "import" adds an `@` import line inside a marker block `install` owns,
+#     in an instructions file that also holds the harness's own content.
+#     Used only where the harness supports `@`-style imports (Claude Code).
+#     If the file is a symlink that this repo does not own (for example,
+#     one managed by a dotfiles tool), `install` does not write through
+#     it. It reports a conflict unless the target already has the block.
+#   "symlink" replaces the whole instructions file with a symlink into
+#     this repo. Used where the file has no import syntax, so it is
+#     treated as fully owned by this repo once installed.
+#
+# Not listed, deliberately:
+# - VS Code Copilot: reads Claude Code's (~/.claude/skills,
+#   ~/.claude/rules) and Copilot CLI's (~/.copilot/skills,
+#   ~/.copilot/instructions) directories already, so it needs no entry
+#   of its own -- adding one would just be a second path to the same
+#   files. Source: code.visualstudio.com/docs/agent-customization/agent-skills
+#   Because VS Code reads both skill folders, it finds each skill twice
+#   when both harnesses are installed. `doctor` reports this as a note
+#   (see [skill_readers] below).
+# - GitHub Copilot coding agent: repo-hosted, reads only project files
+#   (.github/skills, repo AGENTS.md) -- nothing to link into $HOME.
+# - ~/.agents/skills: several tools (Copilot CLI, VS Code) read this
+#   shared directory, so we never write skills there ourselves -- doing
+#   so would multiply the places the same skill name could appear twice.
+#   `doctor` checks it for duplicate names instead (HANDOFF Q4).
+#
+# Removed as unused (were unverified drafts): codex, gemini-cli, cursor.
+# Re-add a harness section here when you actually use it.
 
 [harness.claude-code]
 detect = "~/.claude"
 skills_dir = "~/.claude/skills"
 instructions_file = "~/.claude/CLAUDE.md"
 instructions_method = "import"
+# Source: https://code.claude.com/docs/en/skills
+#         https://code.claude.com/docs/en/memory
+# Claude Code has no home-directory equivalent of AGENTS.md, so this
+# import cannot double-load against native AGENTS.md support (that's
+# project-level only, and Claude Code already dedupes it there when a
+# project's own CLAUDE.md imports its own AGENTS.md).
 
-[harness.codex]
-detect = "~/.codex"
-skills_dir = "~/.agents/skills"
-instructions_file = "~/.codex/AGENTS.md"
+[harness.copilot-cli]
+detect = "~/.copilot"
+skills_dir = "~/.copilot/skills"
+instructions_file = "~/.copilot/copilot-instructions.md"
 instructions_method = "symlink"
+# Source: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills
+#         https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions
+# copilot-instructions.md has no documented `@`-import syntax, so the
+# whole file is symlinked rather than managed as a block.
 
-[harness.gemini-cli]
-detect = "~/.gemini"
-skills_dir = "~/.gemini/skills"
-instructions_file = "~/.gemini/GEMINI.md"
+[harness.code-puppy]
+detect = "~/.code_puppy"
+# No skills_dir: code-puppy has no Agent Skills support, only slash
+# commands (markdown files under .claude/commands, .github/prompts, or
+# .agents/commands) -- a different mechanism this toolkit does not target.
+instructions_file = "~/.code_puppy/AGENTS.md"
 instructions_method = "symlink"
+# Source: https://github.com/mpfaffenberger/code_puppy README
+# Global AGENTS.md is combined with project AGENTS.md (global first),
+# so this is a distinct file from any project AGENTS.md and never
+# duplicates it.
 
-[harness.cursor]
-detect = "~/.cursor"
-skills_dir = "~/.cursor/skills"
-# No global instructions file assumed; verify whether Cursor supports one.
+# Personal skill folders that one tool scans together. `doctor` only
+# reads these folders. It reports a repo skill name that one tool can
+# find in more than one of its folders. Claude Code scans only
+# ~/.claude/skills, so it needs no entry here.
+[skill_readers]
+# Source: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills
+copilot-cli = ["~/.copilot/skills", "~/.agents/skills"]
+# Source: https://code.visualstudio.com/docs/agent-customization/agent-skills
+vscode = ["~/.copilot/skills", "~/.claude/skills", "~/.agents/skills"]

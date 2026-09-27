@@ -23,6 +23,7 @@ CLI links them into each agent harness on each device.
 - Read-only commands: `check` (repo content), `doctor` (device state).
 - Writing commands: `install`, `sync`, `uninstall`. Each supports
   `--dry-run`.
+- After changing `bin/toolkit`, run `python3 -m unittest discover -s tests`.
 
 ## Safety
 
@@ -30,6 +31,8 @@ CLI links them into each agent harness on each device.
 - Delete only symlinks that point into this repo.
 - Before replacing an existing file, back it up with the suffix
   `.pre-toolkit`. `uninstall` restores these backups.
+- Never replace a skill folder, or write through a symlink, that did not
+  come from this repo. Report a conflict, skip that item, and exit 1.
 - Test writing commands against a temporary HOME, for example
   `HOME=$(mktemp -d)`. Never test against the real home folder.
 

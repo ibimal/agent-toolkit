@@ -1,0 +1,858 @@
+#!/usr/bin/env python3
+"""agent-toolkit CLI: link skills and the style file into each harness.
+
+Read-only commands: check, doctor.
+Writing commands (each supports --dry-run): install, sync, uninstall.
+
+Standard library only. See AGENTS.md for the working rules this file
+follows and config.toml for the harness paths it acts on.
+"""
+
+from __future__ import annotations
+
+import sys
+
+# tomllib is new in Python 3.11. Check the version before the imports, so
+# an older python3 (such as the macOS system one) gives a clear message
+# instead of an ImportError.
+if sys.version_info < (3, 11):
+    sys.exit(
+        f"toolkit needs Python 3.11 or later, but {sys.executable} is "
+        f"Python {sys.version.split()[0]}. Run it with a newer python3."
+    )
+
+import argparse
+import re
+import subprocess
+import tomllib
+from dataclasses import dataclass
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+CONFIG_PATH = REPO_ROOT / "config.toml"
+REPO_SKILLS = REPO_ROOT / "skills"
+STYLE_FILE = REPO_ROOT / "instructions" / "technical-clarity.md"
+
+BACKUP_SUFFIX = ".pre-toolkit"
+MARKER_START = "<!-- agent-toolkit:start -->"
+MARKER_END = "<!-- agent-toolkit:end -->"
+IMPORT_BLOCK = f"{MARKER_START}\n@{STYLE_FILE}\n{MARKER_END}"
+
+INSTRUCTIONS_METHODS = {"import", "symlink"}
+REQUIRED_HARNESS_KEYS = {"detect", "instructions_file", "instructions_method"}
+OPTIONAL_HARNESS_KEYS = {"skills_dir"}
+
+NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+ALLOWED_FRONTMATTER_KEYS = {
+    "name",
+    "description",
+    "license",
+    "compatibility",
+    "metadata",
+    "allowed-tools",
+}
+REQUIRED_FRONTMATTER_KEYS = {"name", "description"}
+# Length limits from the Agent Skills specification (agentskills.io).
+MAX_FIELD_LENGTHS = {"name": 64, "description": 1024, "compatibility": 500}
+MAX_SKILL_MD_LINES = 500
+
+
+class Conflict(Exception):
+    """A path that this tool will not change, because the path did not
+    come from this repo. The user must resolve it by hand."""
+
+
+class ConfigError(Exception):
+    """config.toml cannot be used. `issues` lists the reasons."""
+
+    def __init__(self, issues: list[str]):
+        super().__init__("; ".join(issues))
+        self.issues = issues
+
+
+# --------------------------------------------------------------------------
+# Config
+# --------------------------------------------------------------------------
+
+
+@dataclass
+class Harness:
+    name: str
+    detect: Path
+    instructions_file: Path
+    instructions_method: str
+    skills_dir: Path | None
+
+
+@dataclass
+class Config:
+    harnesses: list[Harness]
+    # Tool name -> the skill folders that the tool scans. doctor uses this
+    # to find a skill name that one tool can see twice.
+    skill_readers: dict[str, list[Path]]
+
+
+def _table(data: dict, key: str, issues: list[str]) -> dict:
+    value = data.get(key, {})
+    if isinstance(value, dict):
+        return value
+    issues.append(f"'{key}' must be a table")
+    return {}
+
+
+def _harness_issues(where: str, cfg: object) -> list[str]:
+    if not isinstance(cfg, dict):
+        return [f"{where} must be a table"]
+    issues = []
+    missing = sorted(REQUIRED_HARNESS_KEYS - cfg.keys())
+    unknown = sorted(cfg.keys() - REQUIRED_HARNESS_KEYS - OPTIONAL_HARNESS_KEYS)
+    not_text = sorted(k for k, v in cfg.items() if not isinstance(v, str))
+    if missing:
+        issues.append(f"{where} is missing: {', '.join(missing)}")
+    if unknown:
+        issues.append(f"{where} has unknown keys: {', '.join(unknown)}")
+    if not_text:
+        issues.append(f"{where} values must be strings: {', '.join(not_text)}")
+    method = cfg.get("instructions_method")
+    if isinstance(method, str) and method not in INSTRUCTIONS_METHODS:
+        issues.append(
+            f"{where} instructions_method must be one of "
+            f"{', '.join(sorted(INSTRUCTIONS_METHODS))}, not '{method}'"
+        )
+    return issues
+
+
+def load_config() -> Config:
+    """Read and validate config.toml. Raise ConfigError on any issue, so
+    no command acts on a config it only partly understands."""
+    try:
+        with CONFIG_PATH.open("rb") as f:
+            data = tomllib.load(f)
+    except (OSError, tomllib.TOMLDecodeError) as e:
+        raise ConfigError([f"cannot read config.toml: {e}"]) from e
+
+    issues: list[str] = []
+    unknown = sorted(data.keys() - {"harness", "skill_readers"})
+    if unknown:
+        issues.append(f"unknown top-level keys: {', '.join(unknown)}")
+
+    harnesses = []
+    for name, cfg in _table(data, "harness", issues).items():
+        harness_issues = _harness_issues(f"[harness.{name}]", cfg)
+        if harness_issues:
+            issues.extend(harness_issues)
+            continue
+        harnesses.append(
+            Harness(
+                name=name,
+                detect=Path(cfg["detect"]).expanduser(),
+                instructions_file=Path(cfg["instructions_file"]).expanduser(),
+                instructions_method=cfg["instructions_method"],
+                skills_dir=(
+                    Path(cfg["skills_dir"]).expanduser() if "skills_dir" in cfg else None
+                ),
+            )
+        )
+
+    readers = {}
+    for tool, dirs in _table(data, "skill_readers", issues).items():
+        if not isinstance(dirs, list) or not all(isinstance(d, str) for d in dirs):
+            issues.append(f"[skill_readers] {tool} must be a list of strings")
+            continue
+        readers[tool] = [Path(d).expanduser() for d in dirs]
+
+    if issues:
+        raise ConfigError(issues)
+    return Config(sorted(harnesses, key=lambda h: h.name), readers)
+
+
+# --------------------------------------------------------------------------
+# check
+# --------------------------------------------------------------------------
+
+
+BLOCK_SCALAR_RE = re.compile(r"^[>|][+-]?$")
+
+
+def _strip_quotes(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
+
+
+def _parse_frontmatter(text: str) -> dict[str, str] | None:
+    """Return the top-level frontmatter fields as key -> text, or None if
+    the file has no frontmatter block.
+
+    This reads plain, quoted, folded (>) and literal (|) values, including
+    values that continue on indented lines. It reads a nested mapping,
+    such as metadata, as an empty string. That is enough to validate the
+    spec fields, but it is not a full YAML parser."""
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return None
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+    if end is None:
+        return None
+    fields: dict[str, str] = {}
+    current = None  # the key whose value continues on indented lines
+    for line in lines[1:end]:
+        if not line.strip():
+            continue
+        if line[0] in " \t":
+            if current is not None:
+                fields[current] = (fields[current] + " " + line.strip()).strip()
+            continue
+        m = re.match(r"^([A-Za-z0-9_-]+):\s*(.*)$", line)
+        if not m:
+            current = None
+            continue
+        key, value = m.group(1), m.group(2).strip()
+        if BLOCK_SCALAR_RE.match(value):
+            fields[key], current = "", key
+        elif value:
+            fields[key], current = _strip_quotes(value), key
+        else:
+            fields[key], current = "", None  # a nested mapping, such as metadata
+    return fields
+
+
+def check_skill(folder: Path) -> list[str]:
+    issues: list[str] = []
+    if not NAME_RE.match(folder.name):
+        issues.append(
+            f"folder name '{folder.name}' must be lowercase letters, digits, "
+            "and single hyphens"
+        )
+    skill_md = folder / "SKILL.md"
+    if not skill_md.is_file():
+        issues.append("missing SKILL.md")
+        return issues
+    text = skill_md.read_text(encoding="utf-8")
+    line_count = len(text.splitlines())
+    if line_count > MAX_SKILL_MD_LINES:
+        issues.append(
+            f"SKILL.md has {line_count} lines, over the {MAX_SKILL_MD_LINES}-line limit"
+        )
+    fields = _parse_frontmatter(text)
+    if fields is None:
+        issues.append("SKILL.md has no valid --- frontmatter block")
+        return issues
+    for required in sorted(REQUIRED_FRONTMATTER_KEYS):
+        if not fields.get(required):
+            issues.append(f"frontmatter is missing required field '{required}'")
+    extra = sorted(fields.keys() - ALLOWED_FRONTMATTER_KEYS)
+    if extra:
+        issues.append(f"frontmatter has non-spec fields: {', '.join(extra)}")
+    for key, limit in MAX_FIELD_LENGTHS.items():
+        length = len(fields.get(key, ""))
+        if length > limit:
+            issues.append(f"'{key}' has {length} characters, over the {limit}-character limit")
+    if "name" in fields and fields["name"] != folder.name:
+        issues.append(
+            f"frontmatter name '{fields['name']}' does not match folder name '{folder.name}'"
+        )
+    return issues
+
+
+def _config_issues() -> list[str]:
+    try:
+        load_config()
+    except ConfigError as e:
+        return e.issues
+    return []
+
+
+def _skill_folders() -> list[Path]:
+    if not REPO_SKILLS.is_dir():
+        return []
+    return sorted(p for p in REPO_SKILLS.iterdir() if p.is_dir())
+
+
+def _repo_skill_names() -> list[str]:
+    return [p.name for p in _skill_folders()]
+
+
+def run_check() -> bool:
+    results = [(folder.name, check_skill(folder)) for folder in _skill_folders()]
+    results.append(("config.toml", _config_issues()))
+    results.append(
+        (
+            str(STYLE_FILE.relative_to(REPO_ROOT)),
+            [] if STYLE_FILE.is_file() else ["file is missing"],
+        )
+    )
+    for label, issues in results:
+        print(f"[FAIL] {label}" if issues else f"[OK]   {label}")
+        for issue in issues:
+            print(f"  - {issue}")
+    return not any(issues for _, issues in results)
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    return 0 if run_check() else 1
+
+
+# --------------------------------------------------------------------------
+# Path helpers shared by install, uninstall, and doctor
+# --------------------------------------------------------------------------
+
+
+def exists_or_link(path: Path) -> bool:
+    """True if anything is at path, including a broken symlink."""
+    return path.exists() or path.is_symlink()
+
+
+def points_into_repo(path: Path) -> bool:
+    """True if path is a symlink whose target is inside this repo, even a
+    target that no longer exists. Only these symlinks may be deleted."""
+    if not path.is_symlink():
+        return False
+    try:
+        path.resolve().relative_to(REPO_ROOT)
+    except (OSError, RuntimeError, ValueError):
+        return False
+    return True
+
+
+def is_symlink_to(path: Path, target: Path) -> bool:
+    if not path.is_symlink():
+        return False
+    try:
+        return path.resolve() == target.resolve()
+    except (OSError, RuntimeError):
+        return False
+
+
+def is_repo_skill_link(path: Path) -> bool:
+    """True if path is a symlink to a folder directly under skills/."""
+    return points_into_repo(path) and path.resolve().parent == REPO_SKILLS.resolve()
+
+
+def report(error: Exception) -> int:
+    """Print a failed step and return 1, so callers can count failures."""
+    label = "conflict" if isinstance(error, Conflict) else "error"
+    print(f"  {label}: {error}", file=sys.stderr)
+    return 1
+
+
+def attempt(step, *args) -> int:
+    """Run one install or uninstall step. Report a Conflict or OSError
+    instead of stopping, so the other steps still run. Return 1 if the
+    step failed, else 0."""
+    try:
+        step(*args)
+    except (Conflict, OSError) as e:
+        return report(e)
+    return 0
+
+
+def backup_path(path: Path) -> Path:
+    return path.with_name(path.name + BACKUP_SUFFIX)
+
+
+def move_to_backup(path: Path, dry_run: bool) -> None:
+    """Rename path to its .pre-toolkit backup. Raise Conflict if a backup
+    from an earlier install is still there, because the rename would
+    overwrite that backup."""
+    backup = backup_path(path)
+    if exists_or_link(backup):
+        raise Conflict(
+            f"{path} did not come from this repo, and {backup.name} already "
+            "holds an earlier backup. Move one of them away, then run install again."
+        )
+    print(f"  backup: {path} -> {backup}")
+    if not dry_run:
+        path.rename(backup)
+
+
+def managed_block_span(path: Path, text: str) -> tuple[int, int] | None:
+    """Return the start and end offsets of the managed block in text, or
+    None if text has no markers.
+
+    Raise Conflict unless text has exactly one start marker followed by
+    one end marker. With any other layout, the extent of the block is
+    unclear, and an edit could delete the user's own lines."""
+    starts, ends = text.count(MARKER_START), text.count(MARKER_END)
+    if starts == 0 and ends == 0:
+        return None
+    start, end = text.find(MARKER_START), text.find(MARKER_END)
+    if starts != 1 or ends != 1 or end < start:
+        raise Conflict(
+            f"{path} must have exactly one '{MARKER_START}' line followed by "
+            f"one '{MARKER_END}' line. Fix the markers by hand, then run the "
+            "command again."
+        )
+    return start, end + len(MARKER_END)
+
+
+# --------------------------------------------------------------------------
+# install
+# --------------------------------------------------------------------------
+
+
+def prepare_skills_dir(skills_dir: Path, dry_run: bool) -> bool:
+    """Make sure skills_dir is a real folder. Return True if the folder is
+    new, which means it holds nothing to prune or check yet."""
+    if skills_dir.is_symlink():
+        if not points_into_repo(skills_dir):
+            raise Conflict(
+                f"{skills_dir} is a symlink to {skills_dir.readlink()}. Linking "
+                "skills inside it would write outside the paths in config.toml. "
+                "Replace it with a real folder, then run install again."
+            )
+        # An older setup linked the whole folder to skills/. Linking each
+        # skill through that link would rename the repo's own skill folders.
+        print(f"  remove folder link: {skills_dir}")
+        if not dry_run:
+            skills_dir.unlink()
+    elif skills_dir.is_dir():
+        return False
+    elif skills_dir.exists():
+        raise Conflict(f"{skills_dir} is a file, not a folder")
+    print(f"  create folder: {skills_dir}")
+    if not dry_run:
+        skills_dir.mkdir(parents=True)
+    return True
+
+
+def link_skill(skills_dir: Path, name: str, is_new: bool, dry_run: bool) -> None:
+    src = REPO_SKILLS / name
+    link = skills_dir / name
+    if not is_new:
+        if is_symlink_to(link, src):
+            return
+        if points_into_repo(link):
+            print(f"  replace link: {link} (pointed to {link.readlink()})")
+            if not dry_run:
+                link.unlink()
+        elif link.is_symlink():
+            raise Conflict(
+                f"{link} is a symlink to {link.readlink()}, which is not in this "
+                "repo. If it is left from an old clone, delete it, then run "
+                "install again."
+            )
+        elif link.exists():
+            raise Conflict(
+                f"{link} exists and did not come from this repo. Rename or "
+                f"remove it to install this repo's '{name}' skill."
+            )
+    print(f"  link: {link} -> {src}")
+    if not dry_run:
+        link.symlink_to(src, target_is_directory=True)
+
+
+def install_skill_links(harness: Harness, dry_run: bool) -> int:
+    """Link each repo skill into the harness. Return the number of
+    failed steps."""
+    skills_dir = harness.skills_dir
+    if skills_dir is None:
+        return 0
+    try:
+        is_new = prepare_skills_dir(skills_dir, dry_run)
+    except (Conflict, OSError) as e:
+        return report(e)
+
+    names = _repo_skill_names()
+    failures = 0
+    if not is_new:
+        for entry in sorted(skills_dir.iterdir()):
+            if entry.name not in names and is_repo_skill_link(entry):
+                print(f"  prune stale link: {entry}")
+                if not dry_run:
+                    failures += attempt(entry.unlink)
+    for name in names:
+        failures += attempt(link_skill, skills_dir, name, is_new, dry_run)
+    return failures
+
+
+def install_import_block(path: Path, dry_run: bool) -> None:
+    text = ""
+    if path.is_symlink() and not points_into_repo(path):
+        # Never write through a symlink this repo does not own, such as a
+        # file managed by a dotfiles tool. Accept it if it already has the
+        # block, so the user can add the block in the target themselves.
+        target_text = path.read_text(encoding="utf-8") if path.is_file() else ""
+        span = managed_block_span(path, target_text)
+        if span and target_text[span[0] : span[1]] == IMPORT_BLOCK:
+            return
+        raise Conflict(
+            f"{path} is a symlink to {path.readlink()}, and install will not "
+            "write through it. Replace the symlink with a real file, or add "
+            f"these lines to the target yourself:\n{IMPORT_BLOCK}"
+        )
+    if path.is_symlink():
+        print(f"  remove old link: {path}")
+        if not dry_run:
+            path.unlink()
+    elif path.is_file():
+        text = path.read_text(encoding="utf-8")
+    elif path.exists():
+        raise Conflict(f"{path} is not a file")
+
+    span = managed_block_span(path, text)
+    if span is None:
+        prefix = text.rstrip("\n") + "\n\n" if text.strip() else ""
+        new_text = prefix + IMPORT_BLOCK + "\n"
+    else:
+        start, end = span
+        if text[start:end] == IMPORT_BLOCK:
+            return
+        new_text = text[:start] + IMPORT_BLOCK + text[end:]
+
+    print(f"  update instructions: {path}")
+    if not dry_run:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(new_text, encoding="utf-8")
+
+
+def install_instructions_symlink(path: Path, dry_run: bool) -> None:
+    if is_symlink_to(path, STYLE_FILE):
+        return
+    if points_into_repo(path):
+        print(f"  remove old link: {path}")
+        if not dry_run:
+            path.unlink()
+    elif exists_or_link(path):
+        move_to_backup(path, dry_run)
+    print(f"  link: {path} -> {STYLE_FILE}")
+    if not dry_run:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.symlink_to(STYLE_FILE)
+
+
+def install_instructions(harness: Harness, dry_run: bool) -> None:
+    if harness.instructions_method == "import":
+        install_import_block(harness.instructions_file, dry_run)
+    else:
+        install_instructions_symlink(harness.instructions_file, dry_run)
+
+
+def cmd_install(args: argparse.Namespace) -> int:
+    if not run_check():
+        print("\ncheck failed; fix the issues above before installing.", file=sys.stderr)
+        return 1
+
+    failures = 0
+    any_present = False
+    for h in load_config().harnesses:
+        if not h.detect.exists():
+            print(f"\n[skip] {h.name}: {h.detect} not found")
+            continue
+        any_present = True
+        print(f"\n[{h.name}]" + (" (dry-run)" if args.dry_run else ""))
+        failures += install_skill_links(h, args.dry_run)
+        failures += attempt(install_instructions, h, args.dry_run)
+
+    if not any_present:
+        print("\nNo configured harnesses were found on this device.")
+    if failures:
+        print(
+            f"\n{failures} item(s) not installed. Resolve each conflict above, "
+            "then run install again.",
+            file=sys.stderr,
+        )
+        return 1
+    return 0
+
+
+# --------------------------------------------------------------------------
+# sync
+# --------------------------------------------------------------------------
+
+
+def cmd_sync(args: argparse.Namespace) -> int:
+    if args.dry_run:
+        print(
+            "dry-run: skipping `git pull --ff-only` (can't preview post-pull "
+            "skill state without pulling). Showing install --dry-run against "
+            "the current tree instead.\n"
+        )
+        return cmd_install(args)
+
+    result = subprocess.run(["git", "-C", str(REPO_ROOT), "pull", "--ff-only"])
+    if result.returncode != 0:
+        print("git pull --ff-only failed; resolve manually before installing.", file=sys.stderr)
+        return result.returncode
+    return cmd_install(args)
+
+
+# --------------------------------------------------------------------------
+# uninstall
+# --------------------------------------------------------------------------
+
+
+def uninstall_skill_links(harness: Harness, dry_run: bool) -> int:
+    """Remove every link into this repo from the harness's skills folder.
+    Return the number of failed steps."""
+    skills_dir = harness.skills_dir
+    if skills_dir is None or not exists_or_link(skills_dir):
+        return 0
+    if skills_dir.is_symlink():
+        # install never links skills inside a symlinked folder. A link from
+        # the whole folder into this repo is the only thing to remove.
+        if not points_into_repo(skills_dir):
+            return 0
+        print(f"  remove folder link: {skills_dir}")
+        return 0 if dry_run else attempt(skills_dir.unlink)
+    failures = 0
+    for entry in sorted(skills_dir.iterdir()):
+        if points_into_repo(entry):
+            print(f"  remove link: {entry}")
+            if not dry_run:
+                failures += attempt(entry.unlink)
+    return failures
+
+
+def remove_import_block(path: Path, dry_run: bool) -> None:
+    # install never writes through a symlink, so a block behind one was
+    # added by the user, and the user manages it.
+    if path.is_symlink() or not path.is_file():
+        return
+    text = path.read_text(encoding="utf-8")
+    span = managed_block_span(path, text)
+    if span is None:
+        return
+    head = text[: span[0]].rstrip("\n")
+    tail = text[span[1] :].lstrip("\n")
+    new_text = "\n\n".join(part for part in (head, tail) if part)
+    if new_text and not new_text.endswith("\n"):
+        new_text += "\n"
+    print(f"  remove managed block from: {path}")
+    if not dry_run:
+        path.write_text(new_text, encoding="utf-8")
+
+
+def restore_backup(path: Path, path_removed: bool, dry_run: bool) -> None:
+    backup = backup_path(path)
+    if not exists_or_link(backup):
+        return
+    if exists_or_link(path) and not path_removed:
+        raise Conflict(
+            f"{path} is not a link to this repo, so uninstall will not replace "
+            f"it with {backup.name}. Compare the two files and keep the one you want."
+        )
+    print(f"  restore backup: {backup} -> {path}")
+    if not dry_run:
+        backup.rename(path)
+
+
+def uninstall_instructions(harness: Harness, dry_run: bool) -> None:
+    path = harness.instructions_file
+    removed = False
+    if harness.instructions_method == "import":
+        remove_import_block(path, dry_run)
+    elif points_into_repo(path):
+        print(f"  remove link: {path}")
+        if not dry_run:
+            path.unlink()
+        removed = True
+    restore_backup(path, removed, dry_run)
+
+
+def cmd_uninstall(args: argparse.Namespace) -> int:
+    failures = 0
+    for h in load_config().harnesses:
+        if not h.detect.exists():
+            continue
+        print(f"[{h.name}]" + (" (dry-run)" if args.dry_run else ""))
+        failures += uninstall_skill_links(h, args.dry_run)
+        failures += attempt(uninstall_instructions, h, args.dry_run)
+    if failures:
+        print(
+            f"\n{failures} item(s) left in place. Resolve each conflict above by hand.",
+            file=sys.stderr,
+        )
+        return 1
+    return 0
+
+
+# --------------------------------------------------------------------------
+# doctor
+# --------------------------------------------------------------------------
+
+
+def diagnose_skills(harness: Harness, names: list[str]) -> list[str]:
+    skills_dir = harness.skills_dir
+    if skills_dir is None:
+        return []
+    if skills_dir.is_symlink():
+        if points_into_repo(skills_dir):
+            return [f"{skills_dir} links the whole folder into this repo. Run install."]
+        return [
+            f"{skills_dir} is a symlink to {skills_dir.readlink()}, so install "
+            "will not link skills inside it."
+        ]
+    if not skills_dir.is_dir():
+        return [f"{skills_dir} does not exist. Run install."] if names else []
+
+    problems = []
+    for name in names:
+        link, src = skills_dir / name, REPO_SKILLS / name
+        if is_symlink_to(link, src):
+            continue
+        if points_into_repo(link):
+            problems.append(f"{link} points to {link.readlink()}. Run install.")
+        elif link.is_symlink():
+            problems.append(
+                f"{link} is a symlink to {link.readlink()}, which is not in this "
+                "repo, so install skips this skill."
+            )
+        elif link.exists():
+            problems.append(f"{link} did not come from this repo, so install skips this skill.")
+        else:
+            problems.append(f"{link} is missing. Run install.")
+    for entry in sorted(skills_dir.iterdir()):
+        if entry.name in names:
+            continue
+        if entry.is_symlink() and not entry.exists():
+            hint = " Run install to prune it." if is_repo_skill_link(entry) else ""
+            problems.append(f"{entry} is a broken link to {entry.readlink()}.{hint}")
+        elif entry.name.endswith(BACKUP_SUFFIX):
+            problems.append(
+                f"{entry} is a backup in a folder that the harness scans, so the "
+                "harness can list it as a second skill."
+            )
+    return problems
+
+
+def diagnose_instructions(harness: Harness) -> list[str]:
+    path = harness.instructions_file
+    if harness.instructions_method == "symlink":
+        if is_symlink_to(path, STYLE_FILE):
+            return []
+        return [f"{path} is not a link to {STYLE_FILE.name}. Run install."]
+    if not path.is_file():
+        return [f"{path} is missing. Run install."]
+    text = path.read_text(encoding="utf-8")
+    try:
+        span = managed_block_span(path, text)
+    except Conflict as e:
+        return [str(e)]
+    if span and text[span[0] : span[1]] == IMPORT_BLOCK:
+        return []
+    if path.is_symlink():
+        hint = f"It is a symlink to {path.readlink()}, so add the block there yourself."
+    else:
+        hint = "Run install."
+    return [f"{path} does not import {STYLE_FILE}. {hint}"]
+
+
+def find_duplicates(
+    readers: dict[str, list[Path]], names: list[str]
+) -> tuple[list[str], list[str]]:
+    """Return (problems, notes) for repo skill names that one tool can find
+    in more than one of the folders it scans.
+
+    If every copy links to the same repo skill, the tool sees the same
+    content twice, which is a note. If any copy came from elsewhere, the
+    tool sees two different skills with one name, which is a problem."""
+    problems, notes = [], []
+    for tool, dirs in sorted(readers.items()):
+        same_content, folders = [], set()
+        for name in names:
+            copies = [d / name for d in dirs if exists_or_link(d / name)]
+            if len(copies) < 2:
+                continue
+            if all(is_symlink_to(c, REPO_SKILLS / name) for c in copies):
+                same_content.append(name)
+                folders.update(str(c.parent) for c in copies)
+            else:
+                where = ", ".join(str(c.parent) for c in copies)
+                problems.append(
+                    f"{tool} finds '{name}' in {where}, and not every copy "
+                    "links to this repo."
+                )
+        if same_content:
+            notes.append(
+                f"{tool} finds {', '.join(same_content)} in "
+                f"{', '.join(sorted(folders))}. Every copy links to this repo, "
+                "so the content is the same."
+            )
+    return problems, notes
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    config = load_config()
+    names = _repo_skill_names()
+    total = 0
+
+    for h in config.harnesses:
+        if not h.detect.exists():
+            print(f"[{h.name}] absent ({h.detect} not found)")
+            continue
+        problems = diagnose_skills(h, names) + diagnose_instructions(h)
+        print(f"[{h.name}] " + (f"{len(problems)} problem(s)" if problems else "ok"))
+        for problem in problems:
+            print(f"  - {problem}")
+        total += len(problems)
+
+    problems, notes = find_duplicates(config.skill_readers, names)
+    if problems or notes:
+        print("[duplicate skill names]")
+        for problem in problems:
+            print(f"  - {problem}")
+        for note in notes:
+            print(f"  note: {note}")
+    total += len(problems)
+
+    print(f"\n{total} problem(s) found." if total else "\nNo problems found.")
+    return 1 if total else 0
+
+
+# --------------------------------------------------------------------------
+# CLI
+# --------------------------------------------------------------------------
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="toolkit",
+        description="Link agent-toolkit skills and the style file into each detected harness.",
+    )
+    parser.set_defaults(dry_run=False)
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    sub.add_parser("check", help="Validate skills, config.toml, and the style file (read-only).")
+    sub.add_parser(
+        "doctor",
+        help="Report link, instructions-file, and duplicate-name problems (read-only). "
+        "Exit 1 if it finds a problem.",
+    )
+    for name, help_text in (
+        ("install", "Run check, link skills and instructions, prune stale links."),
+        ("sync", "git pull --ff-only, then install."),
+        ("uninstall", "Remove links into this repo and restore .pre-toolkit backups."),
+    ):
+        p = sub.add_parser(name, help=help_text)
+        p.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Show what would change without writing anything.",
+        )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    # Conflicts go to stderr. Line buffering keeps them next to the step
+    # they belong to when the output goes to a pipe or a log.
+    sys.stdout.reconfigure(line_buffering=True)
+    args = build_parser().parse_args(argv)
+    handlers = {
+        "check": cmd_check,
+        "doctor": cmd_doctor,
+        "install": cmd_install,
+        "sync": cmd_sync,
+        "uninstall": cmd_uninstall,
+    }
+    try:
+        return handlers[args.command](args)
+    except ConfigError as e:
+        print("config.toml cannot be used:", file=sys.stderr)
+        for issue in e.issues:
+            print(f"  - {issue}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

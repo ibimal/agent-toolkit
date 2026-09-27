@@ -41,6 +41,12 @@ IMPORT_BLOCK = f"{MARKER_START}\n@{STYLE_FILE}\n{MARKER_END}"
 INSTRUCTIONS_METHODS = {"import", "symlink"}
 REQUIRED_HARNESS_KEYS = {"detect", "instructions_file", "instructions_method"}
 OPTIONAL_HARNESS_KEYS = {"skills_dir"}
+# Claude Code reads every AGENTS.md and .claude/AGENTS.md in the working
+# directory and the directories above it, so these files apply to every
+# project under the home folder. An instructions file at either path
+# would load the style rules a second time, next to the import in
+# ~/.claude/CLAUDE.md. Source: https://code.claude.com/docs/en/memory
+CLAUDE_CODE_HOME_AGENTS_FILES = ("~/AGENTS.md", "~/.claude/AGENTS.md")
 
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 ALLOWED_FRONTMATTER_KEYS = {
@@ -119,6 +125,17 @@ def _harness_issues(where: str, cfg: object) -> list[str]:
             f"{where} instructions_method must be one of "
             f"{', '.join(sorted(INSTRUCTIONS_METHODS))}, not '{method}'"
         )
+    instructions_file = cfg.get("instructions_file")
+    if isinstance(instructions_file, str):
+        resolved = Path(instructions_file).expanduser().resolve()
+        forbidden = {Path(p).expanduser().resolve() for p in CLAUDE_CODE_HOME_AGENTS_FILES}
+        if resolved in forbidden:
+            issues.append(
+                f"{where} instructions_file {instructions_file} is a file that "
+                "Claude Code reads as AGENTS.md in every project under the home "
+                "folder, so the style rules would load twice. Use a path in the "
+                "harness's own folder."
+            )
     return issues
 
 

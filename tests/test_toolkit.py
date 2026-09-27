@@ -331,6 +331,21 @@ class CheckTest(ToolkitTestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("config.toml cannot be used", result.stderr)
 
+    def test_config_rejects_home_agents_md(self):
+        # Claude Code would read these as AGENTS.md in every project under
+        # the home folder, next to the import in ~/.claude/CLAUDE.md.
+        for path in ("~/AGENTS.md", "~/.claude/AGENTS.md", "~/.claude/../AGENTS.md"):
+            with self.subTest(path=path):
+                (self.repo / "config.toml").write_text(
+                    f'[harness.x]\ndetect = "~/.imp"\ninstructions_file = "{path}"\n'
+                    'instructions_method = "symlink"\n'
+                )
+                result = self.toolkit("check")
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("reads as AGENTS.md", result.stdout)
+                self.assertEqual(self.toolkit("install").returncode, 1)
+                self.assertFalse(os.path.lexists(self.home / "AGENTS.md"))
+
     def test_skill_rules(self):
         long_text = "x" * 1025
         self.add_skill("Bad_Name", skill_md("Bad_Name"))

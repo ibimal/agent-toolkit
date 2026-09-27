@@ -41,10 +41,15 @@ instructions_file = "~/.claude/CLAUDE.md"
 instructions_method = "import"
 # Source: https://code.claude.com/docs/en/skills
 #         https://code.claude.com/docs/en/memory
-# Claude Code has no home-directory equivalent of AGENTS.md, so this
-# import cannot double-load against native AGENTS.md support (that's
-# project-level only, and Claude Code already dedupes it there when a
-# project's own CLAUDE.md imports its own AGENTS.md).
+# Native AGENTS.md support (Claude Code v2.1.277 and later) does not
+# load the style rules a second time. Claude Code keeps loading
+# ~/.claude/CLAUDE.md next to any AGENTS.md. It reads every AGENTS.md
+# and .claude/AGENTS.md in the working directory and the directories
+# above it, so ~/AGENTS.md and ~/.claude/AGENTS.md apply to every
+# project under the home folder. If either file held the style rules,
+# the rules would load twice, so `check` rejects both paths as an
+# instructions_file. Other AGENTS.md files that this repo writes, such
+# as ~/.code_puppy/AGENTS.md, are not above a project folder.
 
 [harness.copilot-cli]
 detect = "~/.copilot"

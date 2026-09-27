@@ -33,12 +33,17 @@ agent-toolkit/
 ## New device
 
 ```
-git clone <remote> ~/Desktop/Projects/agent-toolkit
+git clone https://github.com/ibimal/agent-toolkit.git ~/Desktop/Projects/agent-toolkit
 cd ~/Desktop/Projects/agent-toolkit
 bin/toolkit install
 ```
 
-After that, run `bin/toolkit sync` to update.
+After that, run `bin/toolkit sync` to update. The device needs git and
+Python 3.11+ as `python3`.
+
+The repo is public, so the HTTPS URL needs no GitHub login, and `sync`
+works on a device where you do not sign in to GitHub. To push from a
+device, use `git@github.com:ibimal/agent-toolkit.git` instead.
 
 `install` does not replace a path that did not come from this repo, such
 as your own skill with the same name. It reports a conflict, installs

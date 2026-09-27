@@ -1,4 +1,4 @@
-# Harness paths, verified against current docs (HANDOFF task 1, 2026-09-26).
+# Harness paths, verified against current docs (2026-09-26).
 #
 # detect: the harness is used on this device only if this folder exists.
 # skills_dir: personal Agent Skills directory. Omit entirely if the
@@ -29,10 +29,16 @@
 # - ~/.agents/skills: several tools (Copilot CLI, VS Code) read this
 #   shared directory, so we never write skills there ourselves -- doing
 #   so would multiply the places the same skill name could appear twice.
-#   `doctor` checks it for duplicate names instead (HANDOFF Q4).
+#   `doctor` checks it for duplicate names instead.
 #
 # Removed as unused (were unverified drafts): codex, gemini-cli, cursor.
 # Re-add a harness section here when you actually use it.
+#
+# In use (2026-09): claude-code on one Mac, including Claude Code inside
+# Zed, which is expected to read ~/.claude like the CLI (not verified
+# yet). copilot-cli and code-puppy on a second Mac. `install` links a
+# harness on any device where its detect folder exists, even where the
+# tool is not used.
 
 [harness.claude-code]
 detect = "~/.claude"

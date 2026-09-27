@@ -29,10 +29,10 @@ dotfiles, then reduced to a good default with YAGNI.
 
 ## Open questions (ask me before deciding)
 
-1. Two suggested edits to `technical-clarity.md` are not applied yet:
+1. Two suggested edits to `technical-clarity.md`:
    (a) remove "Use a list when its structure makes the information easier
    to understand or scan."; (b) in the noun-stack rule, change "unclear"
-   to "unclear to that reader".
+   to "unclear to that reader". Applied both on 2026-09-27.
 2. Keep the name `plain-restate`? Decided on 2026-09-27: keep it. The
    reason is in README.md.
 3. Which harnesses do I use on each device? `config.toml` lists three:

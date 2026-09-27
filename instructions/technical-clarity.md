@@ -52,7 +52,8 @@ clarity, then concision.
 - Keep each paragraph focused on one topic. Review paragraphs longer than
   six sentences, and split them when the topic or purpose changes.
 - Rewrite a long noun stack when the relationships between its terms are
-  unclear. Keep established terms intact, and define them when needed.
+  unclear to that reader. Keep established terms intact, and define them
+  when needed.
 - Avoid ambiguous pronouns, culture-specific idioms, buzzwords, and invented
   jargon.
 - Use an analogy only when it makes a concept or mechanism clearer. Do not
@@ -64,8 +65,7 @@ clarity, then concision.
   or purpose.
 - Then add reasoning, evidence, details, and caveats as needed for
   understanding, action, or verification.
-- Prefer connected prose for explanations. Use a list when its structure
-  makes the information easier to understand or scan.
+- Prefer connected prose for explanations.
 - Use numbered lists for ordered steps, with one primary action per step.
 - Use bullets only for parallel items.
 - Use tables only for comparison or lookup across rows that share the same

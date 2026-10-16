@@ -1,0 +1,477 @@
+<title>Playbook Walkthroughs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: a ledger workbench. Playbook index on the left; the player on the right with a terminal and router strip on top, then a ruled step timeline beside a ledger-page detail card. Stacks to one column on phones. */
+:root {
+  --bg: #EDF1EC;
+  --surface: #F8FAF6;
+  --ink: #17231F;
+  --muted: #586A62;
+  --line: #C8D4CC;
+  --accent: #0E6A57;
+  --accent-soft: #D5EADF;
+  --on-accent: #F4FBF7;
+  --gate: #9A5800;
+  --gate-soft: #F4E3C6;
+  --router: #3B4BA8;
+  --router-soft: #DEE2F5;
+  --term-bg: #1B2824;
+  --term-fg: #DDEAE3;
+  --term-prompt: #6FD3B6;
+  --rule: #DCE5DF;
+  --margin: #C8746E;
+  --display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1513; --surface: #161E1B; --ink: #E1EAE5; --muted: #95A69E; --line: #2B3733;
+    --accent: #4CC2A3; --accent-soft: #163A30; --on-accent: #08201A;
+    --gate: #F0B158; --gate-soft: #3A2B12; --router: #9DAAF5; --router-soft: #222948;
+    --term-bg: #090E0C; --term-fg: #D2E4DA; --term-prompt: #4CC2A3;
+    --rule: #222D29; --margin: #9C5550; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1513; --surface: #161E1B; --ink: #E1EAE5; --muted: #95A69E; --line: #2B3733;
+  --accent: #4CC2A3; --accent-soft: #163A30; --on-accent: #08201A;
+  --gate: #F0B158; --gate-soft: #3A2B12; --router: #9DAAF5; --router-soft: #222948;
+  --term-bg: #090E0C; --term-fg: #D2E4DA; --term-prompt: #4CC2A3;
+  --rule: #222D29; --margin: #9C5550; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1260px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+button { font: inherit; color: inherit; }
+button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { display: grid; gap: 10px; margin-bottom: 26px; }
+.eyebrow { margin: 0; font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.top h1 { font-size: clamp(1.9rem, 1.4rem + 2vw, 2.7rem); line-height: 1.1; }
+.lede { margin: 0; max-width: 66ch; color: var(--muted); font-size: 17px; }
+.example { max-width: 860px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.example summary { cursor: pointer; padding: 10px 14px; font-weight: 700; list-style-position: inside; }
+.example-body { padding: 0 16px 14px; display: grid; gap: 8px; font-size: 15px; }
+.example-body p { margin: 0; }
+.kv { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: 4px 12px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+.tag { font-family: var(--mono); font-size: 12.5px; color: var(--accent); margin-right: 6px; }
+.qr-moment { margin: 8px 0 2px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.qr-item { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); gap: 2px 12px; padding: 3px 0; }
+.qr-cmd { font-family: var(--mono); font-size: 14px; color: var(--accent); overflow-wrap: anywhere; }
+.qr-cmd a { color: inherit; }
+.qr-often { color: var(--muted); font-size: 13.5px; }
+.qr-note { color: var(--muted); font-size: 14px; }
+@media (max-width: 640px) { .qr-item { grid-template-columns: minmax(0, 1fr); } }
+
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; align-items: start; }
+nav { display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+.nav-label { margin: 0 0 6px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.nav-items { display: grid; gap: 4px; }
+.nav-item { display: grid; gap: 1px; text-align: left; width: 100%; padding: 8px 10px; border: 1px solid transparent; border-radius: 10px; background: transparent; cursor: pointer; }
+.nav-item:hover { background: var(--surface); border-color: var(--line); }
+.nav-item[aria-current="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.nav-name { font-weight: 700; }
+.nav-ex { font-size: 14px; color: var(--muted); }
+
+main { display: grid; gap: 16px; min-width: 0; }
+.pb-head { display: grid; gap: 6px; }
+.pb-head h2 { font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); }
+.pb-when { margin: 0; color: var(--muted); }
+.pb-decisions { margin: 0; font-size: 15px; }
+.pb-decisions b { color: var(--gate); }
+
+.console { display: grid; gap: 10px; }
+.term { margin: 0; background: var(--term-bg); color: var(--term-fg); font-family: var(--mono); font-size: 14px; line-height: 1.6; padding: 14px 16px; border-radius: 12px; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 3.2em; }
+.term .prompt { color: var(--term-prompt); margin-right: 8px; }
+.caret { display: inline-block; width: 0.55em; height: 1.05em; vertical-align: -0.15em; background: var(--term-prompt); margin-left: 2px; }
+@media (prefers-reduced-motion: no-preference) { .caret { animation: blink 1s steps(1) infinite; } }
+@keyframes blink { 50% { opacity: 0; } }
+.chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; gap: 8px; align-items: baseline; padding: 6px 11px; border-radius: 999px; background: var(--router-soft); color: var(--ink); font-size: 14.5px; max-width: 100%; }
+.chip .k { font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--router); }
+.chip.final { background: var(--accent); color: var(--on-accent); }
+.chip.final .k { color: var(--on-accent); opacity: 0.8; }
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 15px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; }
+.btn svg { width: 14px; height: 14px; fill: currentColor; }
+.counter { margin-left: auto; font-family: var(--mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.progress { display: flex; gap: 3px; height: 6px; }
+.progress span { flex: 1; background: var(--line); border-radius: 3px; overflow: hidden; }
+.progress i { display: block; height: 100%; width: 0; background: var(--accent); }
+
+.player-body { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 20px; align-items: start; }
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.tl-item { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: start; width: 100%; text-align: left; padding: 7px 8px; border: 1px solid transparent; border-radius: 10px; background: transparent; cursor: pointer; }
+.tl-item:hover { background: var(--surface); }
+.tl-num { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); font-family: var(--mono); font-size: 12.5px; color: var(--muted); background: var(--bg); font-variant-numeric: tabular-nums; }
+.tl-text { display: grid; gap: 1px; min-width: 0; }
+.tl-title { font-weight: 700; font-size: 15px; }
+.tl-skill { font-family: var(--mono); font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.tl-gate { justify-self: start; margin-top: 3px; font-size: 12.5px; padding: 1px 8px; border-radius: 999px; background: var(--gate-soft); color: var(--gate); font-weight: 700; }
+.tl-item.done .tl-num { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.tl-item[aria-current="step"] { background: var(--surface); border-color: var(--accent); }
+.tl-item[aria-current="step"] .tl-num { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+.detail { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 20px; display: grid; gap: 12px; min-width: 0; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+.d-eyebrow { margin: 0; font-family: var(--mono); font-size: 12.5px; color: var(--muted); letter-spacing: 0.04em; }
+.detail h3 { font-size: 1.35rem; line-height: 1.2; }
+.skill { display: inline-block; font-family: var(--mono); font-size: 13px; padding: 2px 9px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); overflow-wrap: anywhere; }
+.d-row { display: grid; grid-template-columns: 6.6rem minmax(0, 1fr); gap: 10px; }
+.d-row p { margin: 0; max-width: 62ch; }
+.who { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.who.you { color: var(--gate); }
+.gate-badge { justify-self: start; margin: 0; padding: 5px 12px; border-radius: 999px; background: var(--gate-soft); color: var(--gate); font-weight: 700; font-size: 14.5px; }
+.ledger { margin: 4px 0 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--bg); }
+.ledger figcaption { padding: 7px 12px; font-family: var(--mono); font-size: 12.5px; color: var(--muted); border-bottom: 1px solid var(--line); overflow-wrap: anywhere; background: var(--surface); }
+.ledger ol { list-style: none; margin: 0; padding: 0 12px 0 46px; position: relative; font-family: var(--mono); font-size: 13.5px; line-height: 28px; background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--rule) 27px 28px); }
+.ledger ol::before { content: ""; position: absolute; left: 34px; top: 0; bottom: 0; width: 1px; background: var(--margin); }
+.ledger li { white-space: pre-wrap; overflow-wrap: anywhere; }
+.router-list { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
+
+.takeaway { margin: 4px 0 0; padding: 14px 16px; border-radius: 12px; border: 1px dashed var(--accent); background: transparent; max-width: 80ch; }
+.takeaway b { color: var(--accent); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .enter { animation: rise 420ms ease both; animation-delay: calc(var(--i, 0) * 160ms); }
+  .detail.swap > * { animation: rise 320ms ease both; }
+}
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 1100px) {
+  .player-body { grid-template-columns: minmax(0, 1fr); }
+  .detail { order: -1; position: static; }
+}
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  nav { position: static; gap: 12px; }
+  .nav-items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kv { grid-template-columns: minmax(0, 1fr); }
+  .kv dt { margin-top: 6px; }
+  .d-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .counter { margin-left: 0; width: 100%; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">AI-native SDLC · companion</p>
+    <h1>Playbook walkthroughs</h1>
+    <p class="lede">Every playbook in the workflow and every skill outside a playbook's fixed steps, played step by step on one running product: a household finance app that turns bank statements into a clear picture of where the money goes. Pick one and press play.</p>
+    <details class="example" id="quickrefPanel">
+      <summary>What you type, by moment</summary>
+      <div class="example-body" id="quickrefBody"></div>
+    </details>
+    <details class="example" id="example">
+      <summary>The running example</summary>
+      <div class="example-body" id="exampleBody"></div>
+    </details>
+  </header>
+
+  <div class="layout">
+    <nav id="nav" aria-label="Playbooks"></nav>
+
+    <main id="player">
+      <div class="pb-head">
+        <h2 id="pbName">New application</h2>
+        <p class="pb-when" id="pbWhen"></p>
+        <p class="pb-decisions" id="pbDecisions"></p>
+      </div>
+
+      <section class="console" aria-label="What starts it and how it is triggered">
+        <pre class="term" id="term"></pre>
+        <ol class="chips" id="chips"></ol>
+      </section>
+
+      <div class="controls" role="group" aria-label="Playback">
+        <button class="btn" id="restart" type="button" aria-label="Restart from the router">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h2v12H3zM14 2v12L6 8z"/></svg>Restart</button>
+        <button class="btn" id="prev" type="button" aria-label="Previous step">Back</button>
+        <button class="btn primary" id="play" type="button" aria-pressed="false">
+          <svg viewBox="0 0 16 16" aria-hidden="true" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span id="playLabel">Play</span></button>
+        <button class="btn" id="next" type="button" aria-label="Next step">Next</button>
+        <button class="btn" id="speed" type="button" aria-label="Playback speed">1×</button>
+        <span class="counter" id="counter" aria-live="polite"></span>
+      </div>
+      <div class="progress" id="progress" aria-hidden="true"></div>
+
+      <div class="player-body">
+        <ol class="timeline" id="timeline" aria-label="Steps"></ol>
+        <section class="detail" id="detail" aria-live="polite"></section>
+      </div>
+
+      <p class="takeaway" id="takeaway"></p>
+    </main>
+  </div>
+</div>
+
+<script>
+const DATA = /*DATA*/;
+const PBS = DATA.playbooks;
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = (s) => document.querySelector(s);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+
+let pb = PBS[0], scene = 0, playing = false, speed = 1;
+let raf = null, sceneStart = 0, pausedAt = 0, typeTimer = null;
+const SPEEDS = [1, 1.5, 2];
+
+function scenes() { return pb.steps.length + 1; }
+function duration(i) {
+  if (i === 0) return 1800 + pb.router.length * 600 + pb.input.length * 18;
+  const s = pb.steps[i - 1];
+  const chars = s.does.length + (s.you || "").length + s.lines.join("").length;
+  return Math.min(11500, Math.max(4000, 2400 + chars * 30));
+}
+
+function renderExample() {
+  const p = DATA.product, b = $("#exampleBody");
+  b.appendChild(el("p", null, p.summary));
+  const dl = el("dl", "kv");
+  const add = (k, nodes) => { dl.appendChild(el("dt", null, k)); const dd = el("dd"); nodes.forEach((n) => dd.appendChild(n)); dl.appendChild(dd); };
+  add("Users", [document.createTextNode(p.users)]);
+  const list = (rows) => rows.map(([k, v]) => { const d = el("div"); d.appendChild(el("span", "tag", k)); d.appendChild(document.createTextNode(v)); return d; });
+  add("Outcomes", list(p.outcomes));
+  add("Guardrails", list(p.guardrails));
+  add("Riskiest assumption", [document.createTextNode(p.riskiest)]);
+  add("Milestones", list(p.milestones));
+  b.appendChild(dl);
+}
+
+function renderQuickref() {
+  const b = $("#quickrefBody");
+  if (!b || !DATA.quickref) return;
+  b.appendChild(el("p", "qr-note", "Everything else runs for you inside a playbook. Pick by the moment you are in; each command links to its walkthrough."));
+  let last = "";
+  DATA.quickref.forEach((q) => {
+    if (q.moment !== last) { b.appendChild(el("p", "qr-moment", q.moment)); last = q.moment; }
+    const row = el("div", "qr-item");
+    const cmd = el("div", "qr-cmd");
+    if (q.id) { const a = el("a", null, q.cmd); a.href = "#" + q.id; cmd.appendChild(a); } else { cmd.textContent = q.cmd; }
+    row.appendChild(cmd);
+    const txt = el("div");
+    txt.appendChild(document.createTextNode(q.when + " "));
+    txt.appendChild(el("span", "qr-often", "· " + q.often));
+    row.appendChild(txt);
+    b.appendChild(row);
+  });
+}
+
+function renderNav() {
+  const nav = $("#nav");
+  const groups = [...new Set(PBS.map((p) => p.group))];
+  groups.forEach((g) => {
+    const sec = el("div", "nav-group");
+    sec.appendChild(el("p", "nav-label", g));
+    const items = el("div", "nav-items");
+    PBS.filter((p) => p.group === g).forEach((p) => {
+      const b = el("button", "nav-item");
+      b.type = "button"; b.dataset.id = p.id;
+      b.appendChild(el("span", "nav-name", p.name));
+      b.appendChild(el("span", "nav-ex", p.example));
+      b.addEventListener("click", () => {
+        select(p.id);
+        if (window.innerWidth < 860) $("#player").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      });
+      items.appendChild(b);
+    });
+    sec.appendChild(items);
+    nav.appendChild(sec);
+  });
+}
+
+function select(id) {
+  stop();
+  pb = PBS.find((p) => p.id === id) || PBS[0];
+  scene = 0; pausedAt = 0;
+  document.querySelectorAll(".nav-item").forEach((b) => b.setAttribute("aria-current", b.dataset.id === pb.id ? "true" : "false"));
+  try { localStorage.setItem("pbw-last", pb.id); } catch (e) {}
+  try { history.replaceState(null, "", "#" + pb.id); } catch (e) {}
+  renderPlaybook();
+  renderScene(false);
+}
+
+function renderPlaybook() {
+  $("#pbName").textContent = pb.name + ": " + pb.example;
+  $("#pbWhen").textContent = "When: " + pb.when;
+  const d = $("#pbDecisions"); d.textContent = "";
+  d.appendChild(el("b", null, "Your decisions: ")); d.appendChild(document.createTextNode(pb.decisions));
+  const t = $("#takeaway"); t.textContent = "";
+  t.appendChild(el("b", null, "What it shows: ")); t.appendChild(document.createTextNode(pb.takeaway));
+
+  const tl = $("#timeline"); tl.textContent = "";
+  const first = pb.kind === "skill" ? { title: "How it starts", skill: "trigger", gate: null } : { title: "Router decision", skill: "start", gate: null };
+  const items = [first].concat(pb.steps);
+  items.forEach((s, i) => {
+    const li = el("li");
+    const b = el("button", "tl-item"); b.type = "button"; b.dataset.i = i;
+    b.appendChild(el("span", "tl-num", i === 0 ? "›" : String(i)));
+    const tx = el("span", "tl-text");
+    tx.appendChild(el("span", "tl-title", s.title));
+    tx.appendChild(el("span", "tl-skill", s.skill));
+    if (s.gate) tx.appendChild(el("span", "tl-gate", s.gate));
+    b.appendChild(tx);
+    b.addEventListener("click", () => go(i));
+    li.appendChild(b); tl.appendChild(li);
+  });
+
+  const pr = $("#progress"); pr.textContent = "";
+  for (let i = 0; i < scenes(); i++) { const s = el("span"); s.appendChild(el("i")); pr.appendChild(s); }
+}
+
+function setFill(i, frac) {
+  const segs = $("#progress").children;
+  for (let k = 0; k < segs.length; k++) segs[k].firstChild.style.width = (k < i ? 100 : k === i ? frac * 100 : 0) + "%";
+}
+
+function renderTerm(animate) {
+  clearInterval(typeTimer);
+  const term = $("#term"); term.textContent = "";
+  term.appendChild(el("span", "prompt", pb.prompt || "›"));
+  const text = el("span"); term.appendChild(text);
+  const caret = el("span", "caret"); caret.setAttribute("aria-hidden", "true");
+  if (!animate || reduce) { text.textContent = pb.input; term.appendChild(caret); return; }
+  term.appendChild(caret);
+  let n = 0;
+  typeTimer = setInterval(() => { n += 1; text.textContent = pb.input.slice(0, n); if (n >= pb.input.length) clearInterval(typeTimer); }, Math.max(8, 22 / speed));
+}
+
+function renderChips(animate) {
+  const ul = $("#chips"); ul.textContent = "";
+  const delay = animate && !reduce ? Math.ceil(pb.input.length * 22 / speed / 160) : 0;
+  pb.router.forEach(([k, v], i) => {
+    const li = el("li", "chip" + (i === pb.router.length - 1 ? " final" : ""));
+    li.appendChild(el("span", "k", k));
+    li.appendChild(el("span", null, v));
+    if (animate && !reduce) { li.classList.add("enter"); li.style.setProperty("--i", String(delay + i * 2)); }
+    ul.appendChild(li);
+  });
+}
+
+function renderDetail(animate) {
+  const d = $("#detail"); d.textContent = "";
+  d.classList.remove("swap"); void d.offsetWidth; if (animate) d.classList.add("swap");
+  if (scene === 0) {
+    const s0 = pb.scene0 || {
+      title: "The router picks the playbook",
+      text: "start checks the input against the product brief and the intent backlog, then asks its questions in order: several outcomes, not a feature, or one feature by size.",
+      you: "Confirm or override. The router then loads " + pb.steps.length + " steps into your task list.",
+    };
+    d.appendChild(el("p", "d-eyebrow", (pb.kind === "skill" ? "Trigger" : "Router") + " · before step 1"));
+    d.appendChild(el("h3", null, s0.title));
+    const r = el("div", "d-row"); r.appendChild(el("span", "who", "What happens"));
+    r.appendChild(el("p", null, s0.text));
+    d.appendChild(r);
+    const ol = el("ol", "router-list");
+    pb.router.forEach(([k, v]) => { const li = el("li"); li.appendChild(el("b", null, k + ": ")); li.appendChild(document.createTextNode(v)); ol.appendChild(li); });
+    d.appendChild(ol);
+    const r2 = el("div", "d-row"); r2.appendChild(el("span", "who you", "You"));
+    r2.appendChild(el("p", null, s0.you));
+    d.appendChild(r2);
+    return;
+  }
+  const s = pb.steps[scene - 1];
+  d.appendChild(el("p", "d-eyebrow", "Step " + scene + " of " + pb.steps.length));
+  d.appendChild(el("h3", null, s.title));
+  const sk = el("p"); sk.style.margin = "0"; sk.appendChild(el("span", "skill", s.skill)); d.appendChild(sk);
+  const r = el("div", "d-row"); r.appendChild(el("span", "who", "What happens")); r.appendChild(el("p", null, s.does)); d.appendChild(r);
+  if (s.you) { const y = el("div", "d-row"); y.appendChild(el("span", "who you", "You")); y.appendChild(el("p", null, s.you)); d.appendChild(y); }
+  if (s.gate) d.appendChild(el("p", "gate-badge", "Your decision: " + s.gate));
+  if (s.out) {
+    const fig = el("figure", "ledger");
+    fig.appendChild(el("figcaption", null, s.out));
+    if (s.lines.length) {
+      const ol = el("ol");
+      s.lines.forEach((line, i) => { const li = el("li", animate && !reduce ? "enter" : null, line); li.style.setProperty("--i", String(i + 2)); ol.appendChild(li); });
+      fig.appendChild(ol);
+    }
+    d.appendChild(fig);
+  }
+}
+
+function renderScene(animate) {
+  document.querySelectorAll(".tl-item").forEach((b) => {
+    const i = Number(b.dataset.i);
+    b.classList.toggle("done", i < scene);
+    if (i === scene) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+  });
+  renderTerm(animate && scene === 0);
+  renderChips(animate && scene === 0);
+  renderDetail(animate);
+  setFill(scene, 0);
+  $("#counter").textContent = scene === 0 ? (pb.kind === "skill" ? "Trigger" : "Router") + " · " + pb.steps.length + " steps" : "Step " + scene + " of " + pb.steps.length;
+  $("#prev").disabled = scene === 0;
+  $("#next").disabled = scene === scenes() - 1;
+}
+
+function updatePlay() {
+  const atEnd = !playing && scene === scenes() - 1 && pausedAt >= duration(scene);
+  $("#play").setAttribute("aria-pressed", playing ? "true" : "false");
+  $("#playLabel").textContent = playing ? "Pause" : atEnd ? "Replay" : "Play";
+  $("#playIcon").innerHTML = playing ? '<path d="M3 2h4v12H3zM9 2h4v12H9z"/>' : '<path d="M4 2l10 6-10 6z"/>';
+}
+
+function tick(now) {
+  const elapsed = (now - sceneStart) * speed;
+  const dur = duration(scene);
+  setFill(scene, Math.min(1, elapsed / dur));
+  if (elapsed >= dur) {
+    if (scene < scenes() - 1) { scene += 1; renderScene(true); sceneStart = now; raf = requestAnimationFrame(tick); }
+    else { playing = false; pausedAt = dur; setFill(scene, 1); updatePlay(); }
+    return;
+  }
+  pausedAt = elapsed;
+  raf = requestAnimationFrame(tick);
+}
+
+function play() {
+  if (scene === scenes() - 1 && pausedAt >= duration(scene)) { scene = 0; pausedAt = 0; }
+  playing = true; updatePlay();
+  if (pausedAt === 0) renderScene(true);
+  sceneStart = performance.now() - pausedAt / speed;
+  cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
+}
+function stop() { playing = false; cancelAnimationFrame(raf); clearInterval(typeTimer); updatePlay(); }
+function go(i) {
+  scene = Math.max(0, Math.min(scenes() - 1, i)); pausedAt = 0;
+  renderScene(playing);
+  if (playing) { sceneStart = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); }
+  updatePlay();
+}
+
+$("#play").addEventListener("click", () => (playing ? (stop(), setFill(scene, pausedAt / duration(scene))) : play()));
+$("#next").addEventListener("click", () => go(scene + 1));
+$("#prev").addEventListener("click", () => go(scene - 1));
+$("#restart").addEventListener("click", () => go(0));
+$("#speed").addEventListener("click", () => {
+  const now = performance.now(), elapsed = playing ? (now - sceneStart) * speed : pausedAt;
+  speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
+  $("#speed").textContent = speed + "×";
+  if (playing) sceneStart = now - elapsed / speed;
+});
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest && e.target.closest("button, summary, input, textarea")) return;
+  if (e.key === " ") { e.preventDefault(); $("#play").click(); }
+  else if (e.key === "ArrowRight") go(scene + 1);
+  else if (e.key === "ArrowLeft") go(scene - 1);
+});
+
+renderExample();
+renderQuickref();
+renderNav();
+window.addEventListener("hashchange", () => {
+  const id = (location.hash || "").slice(1);
+  if (PBS.some((p) => p.id === id)) { select(id); const t = $("#pbName"); if (t && t.scrollIntoView) t.scrollIntoView({ block: "start" }); }
+});
+let start = (location.hash || "").slice(1);
+if (!PBS.some((p) => p.id === start)) { try { start = localStorage.getItem("pbw-last") || ""; } catch (e) { start = ""; } }
+select(PBS.some((p) => p.id === start) ? start : PBS[0].id);
+</script>

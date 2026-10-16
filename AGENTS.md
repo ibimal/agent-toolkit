@@ -38,6 +38,17 @@ CLI links them into each agent harness on each device.
 - Test writing commands against a temporary HOME, for example
   `HOME=$(mktemp -d)`. Never test against the real home folder.
 
+## Workflow design
+
+- `workflow/ai-native-sdlc.md` is the design for the skills that this repo
+  will hold. When you build one of its skills, use the name, trigger, and
+  rules that the doc gives. If the build changes any of them, update the
+  doc in the same commit.
+- Edit `workflow/ai-native-sdlc.md` and the files in `workflow/src/`. Never
+  edit `workflow/examples.md` or `workflow/walkthroughs.html` by hand: run
+  `python3 workflow/src/build.py` to regenerate them.
+- After a change to the doc, run `python3 workflow/src/check_doc.py`.
+
 ## Scope
 
 - Deferred features are listed in README.md with their triggers. Do not

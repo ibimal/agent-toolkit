@@ -18,6 +18,9 @@ agent-toolkit/
 │   └── technical-clarity.md   # always-on style rules
 ├── skills/                    # flat, one folder per skill
 ├── tests/test_toolkit.py      # unittest suite for bin/toolkit
+├── workflow/                  # AI-native SDLC design: doc, examples, walkthroughs
+│   ├── ai-native-sdlc.md      # the workflow doc
+│   └── src/                   # example data and the generator
 └── .github/workflows/check.yml
 ```
 
@@ -62,6 +65,12 @@ Each test runs a copy of `bin/toolkit` against a temporary HOME.
 
 Copy an existing skill folder, rename it, update `name` and `description`,
 then run `bin/toolkit check`.
+
+## Workflow design
+
+`workflow/` holds the design for an AI-native development workflow: its
+playbooks, the skills they use, and worked examples. It is the spec for
+the skills that this repo will hold. See `workflow/README.md`.
 
 ## Design notes
 

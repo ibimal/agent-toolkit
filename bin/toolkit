@@ -311,10 +311,14 @@ def _local_links(text: str) -> list[str]:
 def _link_issues(folder: Path, text: str) -> list[str]:
     """Check the AGENTS.md rule "keep file references one level deep".
     Each local link in SKILL.md must name a file inside the skill folder,
-    and a linked Markdown file must not link to more local files."""
+    and a linked Markdown file must not link to more local files. A link
+    back to SKILL.md, or to a file that SKILL.md links directly, adds no
+    depth, so it is allowed."""
     issues = []
     root = folder.resolve()
-    for target in _local_links(text):
+    targets = _local_links(text)
+    direct = {(folder / t).resolve() for t in targets} | {(folder / "SKILL.md").resolve()}
+    for target in targets:
         path = (folder / target).resolve()
         if not path.is_relative_to(root):
             issues.append(f"link '{target}' points outside the skill folder")
@@ -325,6 +329,7 @@ def _link_issues(folder: Path, text: str) -> list[str]:
                 nested = _local_links(path.read_text(encoding="utf-8"))
             except (OSError, UnicodeDecodeError):
                 nested = []
+            nested = [n for n in nested if (path.parent / n).resolve() not in direct]
             if nested:
                 issues.append(
                     f"'{target}' links to more local files ({', '.join(nested)}). "

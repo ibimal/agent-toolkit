@@ -447,7 +447,14 @@ class CheckTest(ToolkitTestCase):
             "Done.\n~~~\n[example](deep.md)\n~~~\n"
         )
 
+        # A reference file may link back to SKILL.md or to a file that
+        # SKILL.md links directly, because that adds no depth.
+        self.add_skill("zeta", skill_md("zeta") + "See [a](a.md) and [b](b.md).\n")
+        (self.repo / "skills" / "zeta" / "a.md").write_text("Back to [top](SKILL.md) or [b](./b.md).\n")
+        (self.repo / "skills" / "zeta" / "b.md").write_text("Done.\n")
+
         out = self.toolkit("check").stdout
+        self.assertIn("[OK]   zeta", out)
         self.assertIn("refers to skill 'ghost'", out)
         self.assertNotIn("refers to skill 'alpha'", out)
         self.assertIn("link 'missing.md' points to a missing file", out)

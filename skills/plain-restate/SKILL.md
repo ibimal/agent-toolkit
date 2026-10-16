@@ -1,6 +1,6 @@
 ---
 name: plain-restate
-description: Restate the previous response in plain technical English, with the same substance and roughly the same length. Use only when the user did not follow the response or asks to restate or re-explain it, for example "wait, what?", "I don't follow", or "say that more plainly". Not for shortening (use condense) or adding depth (use deepen).
+description: Restates the previous response in plain technical English, with the same substance and roughly the same length. Use only when the user did not follow the response or asks to restate or re-explain it, for example "wait, what?", "I don't follow", or "say that more plainly". Not for shortening (use condense) or adding depth (use deepen).
 metadata:
   inspired-by: https://github.com/mattpocock/skills/tree/main/skills/productivity/wait-what
 ---

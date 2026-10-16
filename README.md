@@ -18,7 +18,7 @@ agent-toolkit/
 ├── instructions/
 │   └── technical-clarity.md   # always-on style rules
 ├── skills/                    # flat, one folder per skill
-├── tests/test_toolkit.py      # unittest suite for bin/toolkit
+├── tests/                     # unittest suites: bin/toolkit and the skills' scripts
 ├── workflow/                  # AI-native SDLC design: doc, examples, walkthroughs
 │   ├── ai-native-sdlc.md      # the workflow doc
 │   └── src/                   # example data and the generator
@@ -60,7 +60,9 @@ everything else, and exits 1.
 python3 -m unittest discover -s tests
 ```
 
-Each test runs a copy of `bin/toolkit` against a temporary HOME.
+Each `bin/toolkit` test runs a copy of the CLI against a temporary HOME.
+The other suites test the scripts that skills bundle: the setup guard and
+the size-impact simulation.
 
 ## Add a skill
 
@@ -96,7 +98,13 @@ To fork a skill:
 6. Run `bin/toolkit check`.
 
 The state compares the upstream files in the fork with the pin, after
-`rename-map` is applied. `Pristine` means that they match.
+`rename-map` is applied. `Pristine` means that they match. `Ahead` means
+that the fork also edits the upstream body, and the changelog says how and
+why. `PROVENANCE` is TOML; its `patterns` key names other upstream skills
+that informed `local.md` without being copied.
+
+A skill that the workflow doc marks Write has no upstream body. It records
+the skills that informed it in `metadata.inspired-by`.
 
 ## Workflow design
 

@@ -20,6 +20,8 @@ CLI links them into each agent harness on each device.
   "use the Read tool".
 - The sibling rewrite skills (plain-restate, condense, deepen) must each
   state what they do and which sibling they are not.
+- Every skill follows the workflow doc except four that sit outside it:
+  condense, deepen, plain-restate, and technical-writing-review.
 
 ## Tooling
 
@@ -28,7 +30,8 @@ CLI links them into each agent harness on each device.
 - Read-only commands: `check` (repo content), `doctor` (device state).
 - Writing commands: `install`, `sync`, `uninstall`. Each supports
   `--dry-run`.
-- After changing `bin/toolkit`, run `python3 -m unittest discover -s tests`.
+- After changing `bin/toolkit` or a script inside a skill, run
+  `python3 -m unittest discover -s tests`.
 
 ## Safety
 

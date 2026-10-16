@@ -1,0 +1,11 @@
+# Where this skill comes from. See README.md, "Fork a skill".
+repo = "https://github.com/mattpocock/skills"
+path = "skills/productivity/grilling"
+pin = "49dd158d1076134a641b33efb035946536778336"
+license = "MIT"
+state = "Pristine"  # Pristine, Behind, Ahead, Diverged, or Owned
+
+[[changelog]]
+date = "2026-10-16"
+change = "Forked. New description, the line that loads local.md, and a local.md that adds: why each question matters, glossary alongside, explicit amendments to higher levels, no grilling without the user, and a closing readback."
+reason = "Workflow doc, sections 1, 4, 4.2, 4.5, 6.2, and 10.1."

@@ -9,8 +9,13 @@ CLI links them into each agent harness on each device.
   must equal the `name` field: lowercase letters, numbers, and single
   hyphens.
 - Use only spec frontmatter fields: `name`, `description`, and optionally
-  `license`, `compatibility`, `metadata`, `allowed-tools`.
+  `license`, `compatibility`, `metadata`, `allowed-tools`. There is one
+  exception: a skill that the workflow doc lists as typed only (section
+  2.3) also sets `disable-model-invocation: true`.
 - Keep SKILL.md under 500 lines. Keep file references one level deep.
+- A fork keeps the upstream body and files unchanged. Put additions in
+  `local.md`, and record the source, pin, and changes in `PROVENANCE`.
+  See README.md, "Fork a skill".
 - Describe actions, not harness tool names. Write "read the file", not
   "use the Read tool".
 - The sibling rewrite skills (plain-restate, condense, deepen) must each

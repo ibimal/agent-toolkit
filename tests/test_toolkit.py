@@ -363,6 +363,10 @@ class CheckTest(ToolkitTestCase):
             "with-metadata",
             skill_md("with-metadata", extra="metadata:\n  status: draft\n"),
         )
+        self.add_skill(
+            "typed-only",
+            skill_md("typed-only", extra="disable-model-invocation: true\n"),
+        )
 
         result = self.toolkit("check")
         self.assertEqual(result.returncode, 1)
@@ -375,6 +379,7 @@ class CheckTest(ToolkitTestCase):
         self.assertIn("[OK]   short-folded", out)
         self.assertIn("non-spec fields: version", out)
         self.assertIn("[OK]   with-metadata", out)
+        self.assertIn("[OK]   typed-only", out)
 
     def test_values_that_break_yaml(self):
         # A YAML parser rejects or cuts short the first five. The last two
@@ -431,9 +436,16 @@ class CheckTest(ToolkitTestCase):
         (self.repo / "skills" / "delta" / "references" / "ref.md").write_text(
             "More in [deep](deep.md).\n"
         )
-        self.add_skill("epsilon", skill_md("epsilon") + "See [ref](references/ref.md#part).\n")
+        # Links inside fenced code blocks are examples, so check skips them.
+        self.add_skill(
+            "epsilon",
+            skill_md("epsilon")
+            + "See [ref](references/ref.md#part).\n```md\n[example](absent.md)\n```\n",
+        )
         (self.repo / "skills" / "epsilon" / "references").mkdir()
-        (self.repo / "skills" / "epsilon" / "references" / "ref.md").write_text("Done.\n")
+        (self.repo / "skills" / "epsilon" / "references" / "ref.md").write_text(
+            "Done.\n~~~\n[example](deep.md)\n~~~\n"
+        )
 
         out = self.toolkit("check").stdout
         self.assertIn("refers to skill 'ghost'", out)

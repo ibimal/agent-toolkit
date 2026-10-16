@@ -20,5 +20,10 @@ different.
 | managed block | The lines between the `agent-toolkit:start` and `agent-toolkit:end` markers, which `install` owns inside an instructions file. | marker block |
 | conflict | A path that `install` or `uninstall` does not change, because it did not come from this repo. The command reports it, skips it, and exits 1. | |
 | backup | A file that `install` renamed with the suffix `.pre-toolkit` before replacing it. `uninstall` restores it. | |
+| workflow doc | `workflow/ai-native-sdlc.md`, the design that this repo's skills follow. | |
+| fork | A skill copied from an upstream repo. Its folder adds `local.md` and `PROVENANCE` to the upstream files. | vendored skill |
+| upstream | The repo and path that a fork was copied from. | |
+| pin | The upstream commit that a fork matches. `PROVENANCE` records it. | |
+| typed-only skill | A skill that starts only when the user types its name. It sets `disable-model-invocation: true`. | |
 | rewrite skills | `plain-restate`, `condense`, and `deepen`. Each rewrites the previous response in one direction and names the other two. | |
 | previous response | The agent's last message, which a rewrite skill works on. | |

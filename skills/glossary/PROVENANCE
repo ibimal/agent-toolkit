@@ -1,0 +1,11 @@
+# Where this skill comes from. See README.md, "Fork a skill".
+repo = "https://github.com/mattpocock/skills"
+path = "skills/engineering/domain-modeling"
+pin = "49dd158d1076134a641b33efb035946536778336"
+license = "MIT"
+state = "Pristine"  # Pristine, Behind, Ahead, Diverged, or Owned
+
+[[changelog]]
+date = "2026-10-16"
+change = "Forked as glossary. New name and description, the line that loads local.md, and a local.md that adds: ADRs in docs/sdlc/adr/, user confirmation of each entry, when to write, renames, read-only AFK runs, and draft ADRs."
+reason = "Workflow doc, sections 6.4, 6.5, 10.1, and 10.3."

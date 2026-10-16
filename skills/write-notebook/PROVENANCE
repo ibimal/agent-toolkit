@@ -1,0 +1,12 @@
+# Where this skill comes from. See README.md, "Fork a skill".
+repo = "https://github.com/marimo-team/skills"
+path = "skills/marimo-notebook"
+pin = "6454470960d3cd57151aaeffb1176dd55f598b18"
+license = "Apache-2.0"
+state = "Pristine"  # Pristine, Behind, Ahead, Diverged, or Owned
+patterns = ["marimo jupyter-to-marimo (https://github.com/marimo-team/skills)"]
+
+[[changelog]]
+date = "2026-10-16"
+change = "Forked as write-notebook. New description (agent-startable), the line that loads local.md, and a local.md with the workflow doc's rules for this skill."
+reason = "Workflow doc, sections 4, 6 and 10.1."

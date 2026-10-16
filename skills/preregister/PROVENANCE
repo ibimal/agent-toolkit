@@ -1,0 +1,12 @@
+# Where this skill comes from. See README.md, "Fork a skill".
+repo = "https://github.com/K-Dense-AI/claude-scientific-skills"
+path = "skills/experimental-design"
+pin = "a1043ef544e3a100c28e70a736b6cf32554d0677"
+license = "MIT"
+state = "Pristine"  # Pristine, Behind, Ahead, Diverged, or Owned
+patterns = ["K-Dense statistical-power (https://github.com/K-Dense-AI/claude-scientific-skills)", "gstack eval-plan (https://github.com/garrytan/gstack)", "Causal Inference: The Mixtape (https://mixtape.scunning.com/)"]
+
+[[changelog]]
+date = "2026-10-16"
+change = "Forked as preregister. New description (agent-startable), the line that loads local.md, and a local.md with the workflow doc's rules for this skill."
+reason = "Workflow doc, sections 4, 6 and 10.1."

@@ -5,4 +5,36 @@
 #
 # One rename per line: upstream repo, upstream name, name in this repo.
 
-mattpocock/skills  domain-modeling  glossary
+mattpocock/skills                     domain-modeling                glossary
+mattpocock/skills                     teach                          learn
+mattpocock/skills                     improve-codebase-architecture  architecture-health
+mattpocock/skills                     pr                             ship
+mattpocock/skills                     diagnosing-bugs                diagnose
+mattpocock/skills                     code-review                    review-change
+mattpocock/skills                     setup-matt-pocock-skills       setup
+mattpocock/skills                     grill-with-docs                grilling
+mattpocock/skills                     grill-me                       grilling
+mattpocock/skills                     wait-what                      huh
+cursor/plugins                        in-your-own-words              readback
+cursor/plugins                        show-me-your-work              afk
+cursor/plugins                        ketchup                        huh
+cursor/plugins                        bro                            huh
+cursor/plugins                        arena                          second-opinion
+EveryInc/compound-engineering-plugin  wtf                            huh
+EveryInc/compound-engineering-plugin  ce-noslop                      polish
+EveryInc/compound-engineering-plugin  ce-simplify-code               tidy
+EveryInc/compound-engineering-plugin  ce-explain                     how
+EveryInc/compound-engineering-plugin  ce-debug                       diagnose
+EveryInc/compound-engineering-plugin  ce-ideate                      brainstorm
+EveryInc/compound-engineering-plugin  ce-compound                    codify
+EveryInc/compound-engineering-plugin  ce-resolve-pr-feedback         review-feedback
+EveryInc/compound-engineering-plugin  ce-code-review                 review-change
+anthropics/knowledge-work-plugins     validate-data                  review-result
+anthropics/knowledge-work-plugins     data-context-extractor         data-context
+anthropics/skills                     skill-creator                  to-skill
+K-Dense-AI/claude-scientific-skills   experimental-design            preregister
+K-Dense-AI/claude-scientific-skills   scientific-visualization       make-chart
+trailofbits/skills                    supply-chain-risk-auditor      review-dependency
+getsentry/skills                      skill-scanner                  review-skill
+marimo-team/skills                    marimo-notebook                write-notebook
+marimo-team/skills                    jupyter-to-marimo              write-notebook

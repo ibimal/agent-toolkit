@@ -1,0 +1,11 @@
+# Where this skill comes from. See README.md, "Fork a skill".
+repo = "https://github.com/anthropics/knowledge-work-plugins"
+path = "data/skills/data-context-extractor"
+pin = "33eeda1e8fd856455b05479d13a0f85b5f803744"
+license = "Apache-2.0"
+state = "Pristine"  # Pristine, Behind, Ahead, Diverged, or Owned
+
+[[changelog]]
+date = "2026-10-16"
+change = "Forked as data-context. New description (agent-startable), the line that loads local.md, and a local.md with the workflow doc's rules for this skill."
+reason = "Workflow doc, sections 4, 6 and 10.1."

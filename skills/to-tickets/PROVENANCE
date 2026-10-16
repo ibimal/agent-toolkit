@@ -1,0 +1,11 @@
+# Where this skill comes from. See README.md, "Fork a skill".
+repo = "https://github.com/mattpocock/skills"
+path = "skills/engineering/to-tickets"
+pin = "49dd158d1076134a641b33efb035946536778336"
+license = "MIT"
+state = "Pristine"  # Pristine, Behind, Ahead, Diverged, or Owned
+
+[[changelog]]
+date = "2026-10-16"
+change = "Forked. New description (agent-startable), the line that loads local.md, and a local.md with the workflow doc's rules for this skill."
+reason = "Workflow doc, sections 4, 6 and 10.1."

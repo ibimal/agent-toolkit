@@ -1,11 +1,13 @@
 ---
 name: grilling
-description: Align with the user on a plan, intent, spec, or idea before anything is built. Asks rounds of numbered questions, each with a recommended answer and why it matters, until every branch is resolved, then ends with a readback. Use before any non-trivial change, when a playbook step says grilling, or when the user asks to be grilled or to stress-test an idea. Runs glossary alongside it.
+description: "Aligns with the user on a plan, intent, spec or idea before anything is built. Asks rounds of numbered questions, each with a recommended answer and why it matters, until every branch is resolved, then ends with a readback. Use before any non-trivial change, when a playbook step says grilling, or when the user asks to be grilled or to stress-test an idea. Runs glossary alongside it."
 license: MIT
 ---
 
 Read [local.md](local.md) first. It holds this repo's additions to the
-instructions below, and it wins where the two differ.
+instructions below, and it wins where the two differ. The instructions
+below come from an upstream skill; `PROVENANCE` names it and lists the
+changes.
 
 Interview the user relentlessly until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
 

@@ -1,3 +1,6 @@
 .DS_Store
 __pycache__/
 *.pyc
+
+# data-context map files: private schemas and definitions (see skills/data-context/local.md)
+skills/data-context/map/

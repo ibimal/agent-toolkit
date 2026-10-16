@@ -1,11 +1,13 @@
 ---
 name: glossary
-description: Keep the project glossary, GLOSSARY.md, in step with the conversation. Challenges fuzzy or conflicting terms, drafts each settled term for the user to confirm and writes it at once, and offers an ADR only when a decision is hard to reverse, surprising, and a real trade-off. Use alongside every grilling, when a term is settled, renamed, or redefined, or when the user asks to define project vocabulary. Not for only reading the glossary, which any skill does.
+description: "Keeps the project glossary, GLOSSARY.md, in step with the conversation. Challenges fuzzy or conflicting terms, drafts each settled term for the user to confirm and writes it at once, and offers an ADR only when a decision is hard to reverse, surprising and a real trade-off. Use alongside every grilling, when a term is settled, renamed or redefined, or when the user asks to define project vocabulary. Not for only reading the glossary, which any skill does."
 license: MIT
 ---
 
 Read [local.md](local.md) first. It holds this repo's additions to the
-instructions below, and it wins where the two differ.
+instructions below, and it wins where the two differ. The instructions
+below come from an upstream skill; `PROVENANCE` names it and lists the
+changes.
 
 # Domain Modeling
 

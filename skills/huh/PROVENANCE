@@ -1,0 +1,12 @@
+# Where this skill comes from. See README.md, "Fork a skill".
+repo = "https://github.com/EveryInc/compound-engineering-plugin"
+path = "skills/wtf"
+pin = "fac349c0c31a543d497fd4825af9b44bdb7e7dfe"
+license = "MIT"
+state = "Pristine"  # Pristine, Behind, Ahead, Diverged, or Owned
+patterns = ["mattpocock wait-what (https://github.com/mattpocock/skills)", "pstack ketchup (https://github.com/cursor/plugins)"]
+
+[[changelog]]
+date = "2026-10-16"
+change = "Forked as huh. New description (typed only), the line that loads local.md, and a local.md with the workflow doc's rules for this skill."
+reason = "Workflow doc, sections 4, 6 and 10.1."

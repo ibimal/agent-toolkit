@@ -1,0 +1,12 @@
+# Where this skill comes from. See README.md, "Fork a skill".
+repo = "https://github.com/anthropics/knowledge-work-plugins"
+path = "data/skills/explore-data"
+pin = "33eeda1e8fd856455b05479d13a0f85b5f803744"
+license = "Apache-2.0"
+state = "Ahead"  # Pristine, Behind, Ahead, Diverged, or Owned
+# Ahead: the body edit keeps the link inside the skill folder, as bin/toolkit check requires.
+
+[[changelog]]
+date = "2026-10-16"
+change = "Forked. New description (agent-startable), the line that loads local.md, and a local.md with the workflow doc's rules for this skill. Body edit: '](../../CONNECTORS.md)' to '](CONNECTORS.md)'. Added CONNECTORS.md from the upstream repo."
+reason = "Workflow doc, sections 4, 6 and 10.1."

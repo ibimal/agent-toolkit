@@ -33,6 +33,14 @@ clarity, then concision.
 - Use one preferred name for each concept. Follow the project's glossary or
   terminology rules when available. Use canonical terms and avoid synonyms
   that the project explicitly rejects.
+- When asked to shorten a response, keep every fact, condition, and
+  caveat. If a length limit cannot hold them all, keep what matters most
+  and name what you left out. If the response cannot get shorter without
+  losing content, say so instead of rewriting it.
+- When asked for more depth, first say whether the deeper analysis
+  changes or qualifies the earlier conclusion. Support each added claim
+  with evidence you can check, and mark any claim you could not check as
+  unverified.
 
 ## Write clearly
 

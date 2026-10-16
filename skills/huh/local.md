@@ -20,7 +20,9 @@ instructions in SKILL.md, and they win where the two differ.
      recommendation.
   3. The last reply asks several: each in a plain line or two, numbered as
      asked, so the user can pick one with `/huh Q2`.
-  4. The last reply asks nothing: the last reply in plain words.
+  4. The last reply asks nothing: the last reply in plain words. Keep
+     every fact, condition, caveat and conclusion; only the wording gets
+     plainer, so do not shorten for its own sake.
 - **A catch-up is read-only.** Change nothing and start nothing. Check each
   number against the fact it comes from. Name things the way the user would
   know them.

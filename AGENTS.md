@@ -18,10 +18,10 @@ CLI links them into each agent harness on each device.
   See README.md, "Fork a skill".
 - Describe actions, not harness tool names. Write "read the file", not
   "use the Read tool".
-- The sibling rewrite skills (plain-restate, condense, deepen) must each
-  state what they do and which sibling they are not.
-- Every skill follows the workflow doc except four that sit outside it:
-  condense, deepen, plain-restate, and technical-writing-review.
+- The rewrite skills (condense, deepen) must each state what they do and
+  which skill they are not: the other one, or huh for plainer wording.
+- Every skill follows the workflow doc except the two rewrite skills,
+  condense and deepen, which sit outside it.
 
 ## Tooling
 

@@ -1,6 +1,6 @@
 ---
 name: deepen
-description: Expands the previous response with more technical depth, such as mechanisms, trade-offs, evidence, and edge cases. Use only when the user asks for more depth, detail, or rigor, for example "go deeper", "why does that work?", or "what are the trade-offs?". Not for rewording (use plain-restate) or shortening (use condense).
+description: Expands the previous response with more technical depth, such as mechanisms, trade-offs, evidence, and edge cases. Use only when the user asks for more depth, detail, or rigor, for example "go deeper", "why does that work?", or "what are the trade-offs?". Not for plainer wording (use huh) or shortening (use condense).
 ---
 
 # Deepen

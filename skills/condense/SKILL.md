@@ -1,6 +1,6 @@
 ---
 name: condense
-description: Shortens the previous response without simplifying it. Keeps every fact, condition, caveat, and technical term, and removes repetition and filler. Use only when the user asks for a shorter or tighter version, for example "shorter", "tighten this", or "too long". Not for plainer wording (use plain-restate), more depth (use deepen), or a summary that leaves out details.
+description: Shortens the previous response without simplifying it. Keeps every fact, condition, caveat, and technical term, and removes repetition and filler. Use only when the user asks for a shorter or tighter version, for example "shorter", "tighten this", or "too long". Not for plainer wording (use huh), more depth (use deepen), or a summary that leaves out details.
 ---
 
 # Condense

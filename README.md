@@ -126,14 +126,13 @@ the skills that this repo will hold. See `workflow/README.md`.
   versions.
 - The style rules exist once, in `instructions/technical-clarity.md`.
   Claude Code loads it through an `@` import in `~/.claude/CLAUDE.md`;
-  other harnesses get a symlink. The review skill relies on these loaded
-  rules and holds no copy.
+  other harnesses get a symlink. Skills that apply the rules, such as
+  `technical-writing`, `polish` and `huh`, rely on these loaded rules and
+  hold no copy.
 - A fork keeps the upstream body unchanged and puts this repo's additions
   in `local.md`, so that most upstream updates stay simple. It records
   its source in `PROVENANCE` and keeps the upstream LICENSE file. This
   follows section 10.2 of the workflow doc.
-- The restate skill is named `plain-restate`, not `clarify`, because
-  models read "clarify" as "ask clarifying questions".
 - The CLI uses the Python standard library only, so a new device needs no
   setup beyond Python 3.11+.
 - `install` never replaces a skill folder, and never writes through a

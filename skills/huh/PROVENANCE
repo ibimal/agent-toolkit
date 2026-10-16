@@ -10,3 +10,8 @@ patterns = ["mattpocock wait-what (https://github.com/mattpocock/skills)", "psta
 date = "2026-10-16"
 change = "Forked as huh. New description (typed only), the line that loads local.md, and a local.md with the workflow doc's rules for this skill."
 reason = "Workflow doc, sections 4, 6 and 10.1."
+
+[[changelog]]
+date = "2026-10-16"
+change = "local.md: restating the last reply keeps every fact at the same length, carried over from plain-restate, which huh replaces."
+reason = "Workflow doc, section 10.1: huh replaces wait-what; one skill per job (10.3)."

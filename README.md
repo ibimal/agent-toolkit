@@ -10,7 +10,7 @@ agent-toolkit/
 ├── README.md
 ├── LICENSE                    # MIT
 ├── AGENTS.md                  # rules for agents working on this repo
-├── CONTEXT.md                 # glossary
+├── GLOSSARY.md                # glossary
 ├── CLAUDE.md                  # imports AGENTS.md for Claude Code
 ├── config.toml                # harness paths and instructions methods
 ├── rename-map                 # upstream skill names that this repo changes

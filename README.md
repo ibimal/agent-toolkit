@@ -71,6 +71,9 @@ repo by `setup`. Three skills cover most days:
 | `/huh` | You don't follow the last message, or you are back and need catching up. |
 | `/polish` | Before you send a message you wrote. |
 
+In an existing project, the first `/start` adopts the workflow before it
+routes the request: section 4.6 of the workflow doc lists the steps.
+
 14 skills start only when you type them. The other 41 can also start
 when the agent needs them, inside a playbook or another skill. 40 skills
 are forks of upstream skills; 15 are written from the workflow doc.

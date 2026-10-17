@@ -20,7 +20,8 @@ instructions in SKILL.md, and they win where the two differ.
     their last review; the other areas with the most change. Keep one slot
     for the area reviewed longest ago, so cold code is never skipped for
     long.
-  - A milestone review is a full sweep with no budget.
+  - A milestone review, or the adoption of an existing project, is a full
+    sweep with no budget.
   - When the user names an area or says `full`, that is the scope.
 - **Record coverage.** Update the ledger for every area reviewed, including
   areas with no findings: the commit, what was found, and what is still open.

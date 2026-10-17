@@ -54,7 +54,8 @@ code is expensive to get wrong.
 - Change in an area is counted from the commit the ledger recorded for its
   last review.
 - When the user names an area (`/code-health categoriser`) or says `full`,
-  that is the scope. A milestone review is a full sweep with no budget.
+  that is the scope. A milestone review, or the adoption of an existing
+  project, is a full sweep with no budget.
 - When the merge hook starts both `-health` skills, `architecture-health`
   runs first; skip code it is about to restructure.
 

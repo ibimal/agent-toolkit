@@ -26,6 +26,7 @@ Worked examples of every playbook in the workflow doc ([ai-native-sdlc.md](ai-na
 |---|---|---|
 | `/start I want to build a household finance app that shows people where their money goes` | Backlog: Empty repo, no product brief · Outcomes: Several: import, categorise, monthly view, budgets, alerts | New application |
 | `/start Let couples manage their money together` | Backlog: No match: a new area · Outcomes: Several: invite a partner, combined view, split expenses · Repo: Existing product with a brief | Expansion variant |
+| `/start Parse Bank E's new statement format` | Repo: Existing code, tests and CI; no docs/sdlc/config · Instruction files: A two-year-old CLAUDE.md; no AGENTS.md · Tracker: GitHub Issues, 23 open | Adoption |
 | `/start Show amounts in Indian number format, like ₹1,24,560` | Backlog: Part of I-0003 Monthly spending · Outcomes: One · Type: Feature · Size: S: one formatter, a one-sentence diff | Feature S |
 | `/start Show me all my recurring payments in one place` | Backlog: No match: new intent · Outcomes: One · Type: Feature · Size: M: one area (transactions) | Feature M |
 | `/start Sync my bank accounts automatically instead of uploading statements` | Backlog: Related to I-0001, but a new outcome: new intent · Outcomes: One · Type: Feature · Size: L: external contract, consent and security, a new sync service · Sizing: Go, one bank first (docs/sdlc/sizing/bank-sync.md) | Feature L |
@@ -202,7 +203,70 @@ Households  I-0014 Split shared expenses   ← I-0013
 
 ---
 
-## 3. Feature S: Indian number format
+## 3. Adoption: The statement parser adopts the workflow
+
+**When:** The first /start in a project that already has code but no docs/sdlc/config.
+
+**You bring:** `/start Parse Bank E's new statement format`
+
+**Router:** Repo: Existing code, tests and CI; no docs/sdlc/config · Instruction files: A two-year-old CLAUDE.md; no AGENTS.md · Tracker: GitHub Issues, 23 open → **Adoption through setup, then the request routes**
+
+**Your decisions:** Tracker · Brief · Architecture · which health batches to pick · then the request's own gates
+
+| # | Skills | Step | What happens | You | Gate |
+|---|---|---|---|---|---|
+| 1 | setup | Say what it adds | Lists what adoption adds and asks one question. The repo already uses GitHub Issues, so it stays the tracker and its 23 open issues stay there; none is converted. | Keep GitHub Issues. | — |
+| 2 | setup | Merge the instruction files | The old CLAUDE.md names a test folder that no longer exists. Its content moves into AGENTS.md beside the commands setup found in the Makefile and CI, and CLAUDE.md now holds @AGENTS.md. The stale command is fixed, and the diff is in the setup report. | — | — |
+| 3 | setup | Controls and standards | Installs the guard, and puts the ruff, mypy and pytest runs the repo already has behind make health. REVIEW.md starts from the baseline and records what the code already follows. Existing CI stays and gains a health job. | — | — |
+| 4 | setup → verify-app | Prove it runs | Writes verify-app from the existing fixtures: it parses three sample statements end to end and checks their totals. It passes from a clean clone. | — | — |
+| 5 | setup → grilling → to-product | Draft the brief from what exists | Drafts the brief from the README, the code and the open issues, describing the service as it is. The grilling settles statement, format version and adapter, which start the glossary. | Accept the brief. | Brief accepted |
+| 6 | setup → to-design | Draft the architecture as it is | Drafts architecture.md from the code: a queue consumer, one adapter per bank behind a common interface, and a normaliser. Two existing decisions are hard to reverse and surprising, so they become ADRs. | Accept the architecture. | Architecture accepted |
+| 7 | architecture-health → code-health | Baseline health sweep | Both run a full sweep, so the health ledger starts with every area at today's commit. Nothing is changed; the findings wait for your pick. | — | — |
+| 8 | agent-readiness | Agent-readiness check | A fresh session, given only the repo, states the commands, conventions and architecture, and runs verify-app. It passes, but the service has no deploy command yet, so parallel worktrees and AFK runs wait; the setup report lists it. | — | — |
+| 9 | start | Back to the request | Bank E's format is one new adapter behind the existing interface, so the router picks Feature S. The old issues still wait in GitHub; each becomes an intent or a Bug fix only when /start picks it up. | — | Feature S: merge |
+
+**Artifacts**
+
+`AGENTS.md`
+```
+Build: make build
+Test: make test   (was: pytest tests/unit, folder removed)
+Health checks: make health
+Verify end to end: the verify-app skill
+```
+`docs/sdlc/config`
+```
+tracker = "github"
+health_command = "make health"
+verify_command = "make verify"
+```
+`docs/sdlc/product.md`
+```
+Users: the household app's import pipeline
+O1 Every supported bank's statements parse without manual fixes
+G1 Raw statements deleted after import
+Non-goal: categorising transactions (the app does that)
+```
+`docs/sdlc/architecture.md`
+```
+Components: queue consumer → bank adapters → normaliser
+Areas: consumer, adapters, normaliser, docs
+ADR 0001 One format version per bank
+ADR 0002 Raw files stay in memory, never on disk
+```
+`docs/sdlc/health-ledger.md`
+```
+adapters: six adapters copy the same date logic (escalated to architecture-health)
+docs: the README lists a bank that is no longer supported
+normaliser: two tests pass even if the function returns nothing
+3 batches proposed, 0 picked
+```
+
+**What it shows:** Adoption describes the project as it is before anything changes: setup merges instead of overwriting, the brief and the architecture are drafted from the code for you to accept, and a full health sweep gives every later run a baseline. Then work routes as usual.
+
+---
+
+## 4. Feature S: Indian number format
 
 **When:** One outcome; the diff fits in one sentence.
 
@@ -240,7 +304,7 @@ Review: rung 1, other family; 1 finding fixed
 
 ---
 
-## 4. Feature M: Recurring payments
+## 5. Feature M: Recurring payments
 
 **When:** One outcome inside one area of the system.
 
@@ -301,7 +365,7 @@ Then it is listed as recurring with its next date
 
 ---
 
-## 5. Feature L: Automatic bank sync
+## 6. Feature L: Automatic bank sync
 
 **When:** One outcome with several units, new architecture, or high risk.
 
@@ -365,7 +429,7 @@ ADR 0011: aggregator API, not screen scraping
 
 ---
 
-## 6. Bug fix: Month-end timezone bug
+## 7. Bug fix: Month-end timezone bug
 
 **When:** Something behaving wrongly.
 
@@ -406,7 +470,7 @@ _Avoid_: timestamp
 
 ---
 
-## 7. Refactor: One adapter per bank
+## 8. Refactor: One adapter per bank
 
 **When:** Structure changes; behaviour must not.
 
@@ -439,7 +503,7 @@ _Avoid_: timestamp
 
 ---
 
-## 8. Spike: Local categoriser model
+## 9. Spike: Local categoriser model
 
 **When:** A question to answer or an option to explore.
 
@@ -487,7 +551,7 @@ Re-run from a clean start: same result; snapshot, commit and seeds recorded
 
 ---
 
-## 9. Incident: Bank changes its CSV format
+## 10. Incident: Bank changes its CSV format
 
 **When:** An alert, failed pipeline or metric drift.
 
@@ -519,7 +583,7 @@ Data: none lost; files can be re-parsed
 
 ---
 
-## 10. `huh`: A grilling question you can't parse
+## 11. `huh`: A grilling question you can't parse
 
 **When:** You don't follow the agent's last message or the question it asks you.
 
@@ -553,7 +617,7 @@ Asked again: look back 90 days for duplicates?
 
 ---
 
-## 11. `huh`: Back from lunch mid-session
+## 12. `huh`: Back from lunch mid-session
 
 **When:** You come back to a long session and need to know what changed for you.
 
@@ -586,7 +650,7 @@ If you don't answer: it waits; nothing merges
 
 ---
 
-## 12. `readback`: Check the goal before an AFK run
+## 13. `readback`: Check the goal before an AFK run
 
 **When:** Before the agent builds, you want to be sure it understood you.
 
@@ -619,7 +683,7 @@ Unsure: should a correction re-categorise past months too?
 
 ---
 
-## 13. `handoff`: Pause and switch devices
+## 14. `handoff`: Pause and switch devices
 
 **When:** You stop part-way through a playbook, or the session's context is getting long.
 
@@ -654,7 +718,7 @@ Suggested skills: implement, tdd, verify-app
 
 ---
 
-## 14. `afk`: Overnight MVP build
+## 15. `afk`: Overnight MVP build
 
 **When:** Nobody will watch the run: you say you're stepping away or type /afk, or a hook or scheduled task starts it.
 
@@ -699,7 +763,7 @@ Proposed term for the glossary: merchant rule (row 3)
 
 ---
 
-## 15. `how`: How a statement becomes transactions
+## 16. `how`: How a statement becomes transactions
 
 **When:** You need to know how code works, or where something belongs.
 
@@ -731,7 +795,7 @@ Gotcha: an adapter must never log raw rows
 
 ---
 
-## 16. `why`: Why monthly totals are pre-aggregated
+## 17. `why`: Why monthly totals are pre-aggregated
 
 **When:** You need to know why code is the way it is.
 
@@ -763,7 +827,7 @@ Inferred: computing on read was never measured (not in the ADR)
 
 ---
 
-## 17. `explore-data`: A new bank's export
+## 18. `explore-data`: A new bank's export
 
 **When:** A dataset arrives that nobody has looked at properly yet.
 
@@ -798,7 +862,7 @@ Narration: holds payee names, so personal data: counts only, values hidden
 
 ---
 
-## 18. `data-context`: Map the warehouse, then keep it current
+## 19. `data-context`: Map the warehouse, then keep it current
 
 **When:** The agent queries data that has no map yet, or any work brings new facts about the data.
 
@@ -854,7 +918,7 @@ test accounts: is_test, plus every @example.com email
 
 ---
 
-## 19. `diagnose-metric`: Engagement fell 7 points in March
+## 20. `diagnose-metric`: Engagement fell 7 points in March
 
 **When:** A metric moved and you need to know why before anyone acts on it.
 
@@ -895,7 +959,7 @@ Would change this: a fall within existing households next month
 
 ---
 
-## 20. `write-notebook`: The broken evaluation notebook
+## 21. `write-notebook`: The broken evaluation notebook
 
 **When:** The agent writes a notebook, or touches an old Jupyter one.
 
@@ -934,7 +998,7 @@ Diff in the PR: the code, not 4 MB of JSON
 
 ---
 
-## 21. `look-up`: The aggregator's sync limits
+## 22. `look-up`: The aggregator's sync limits
 
 **When:** A decision waits on a fact you'd have to read up on.
 
@@ -966,7 +1030,7 @@ Open: no published limit on history depth
 
 ---
 
-## 22. `learn`: Learning Postgres row-level security
+## 23. `learn`: Learning Postgres row-level security
 
 **When:** You want to learn a topic properly, over several sessions.
 
@@ -1007,7 +1071,7 @@ FORCE ROW LEVEL SECURITY makes the owner follow the policies too
 
 ---
 
-## 23. `brainstorm`: More households back for a second month
+## 24. `brainstorm`: More households back for a second month
 
 **When:** You need ideas, not yet an idea: a new project, a feature area, an improvement plan.
 
@@ -1056,7 +1120,7 @@ Do nothing: kept as the baseline
 
 ---
 
-## 24. `wayfinder`: Bank sync's open decisions
+## 25. `wayfinder`: Bank sync's open decisions
 
 **When:** Open decisions need more than one session before a spec or design can be written.
 
@@ -1122,7 +1186,7 @@ De-duplication key: date + amount + reference
 
 ---
 
-## 25. `size-impact`: Is bank sync worth building?
+## 26. `size-impact`: Is bank sync worth building?
 
 **When:** Before deciding whether something is worth building, or when choosing between options at planning.
 
@@ -1169,7 +1233,7 @@ Chance of clearing the bar: 69%
 
 ---
 
-## 26. `preregister`: Does a reminder raise account linking?
+## 27. `preregister`: Does a reminder raise account linking?
 
 **When:** Before an experiment, A/B test or model comparison decides something.
 
@@ -1208,7 +1272,7 @@ Everything else is reported as exploratory
 
 ---
 
-## 27. `to-questionnaire`: Token retention, asked of the privacy lead
+## 28. `to-questionnaire`: Token retention, asked of the privacy lead
 
 **When:** You can't answer a question, but someone else can.
 
@@ -1241,7 +1305,7 @@ Q3 Do the rules differ by bank?
 
 ---
 
-## 28. `technical-writing`: A PR description read in one pass
+## 29. `technical-writing`: A PR description read in one pass
 
 **When:** A doc, README, RFC or PR description is for people to read.
 
@@ -1273,7 +1337,7 @@ After: Payments whose amount changes by over 20% are not grouped.
 
 ---
 
-## 29. `polish`: The engagement finding, for the product lead
+## 30. `polish`: The engagement finding, for the product lead
 
 **When:** A message, email, comment or post you wrote, before you send it as yourself.
 
@@ -1307,7 +1371,7 @@ Could add: campaign households are now 24% of the base (from the readout)
 
 ---
 
-## 30. `make-chart`: The engagement readout's chart
+## 31. `make-chart`: The engagement readout's chart
 
 **When:** Any chart: for a readout, a PR or a dashboard.
 
@@ -1341,7 +1405,7 @@ Labels on the lines; no legend; 0–100% axis
 
 ---
 
-## 31. `second-opinion`: Is the de-duplication rule safe?
+## 32. `second-opinion`: Is the de-duplication rule safe?
 
 **When:** You want another model family's view on a diff, a plan or an idea.
 
@@ -1374,7 +1438,7 @@ Next: check both cases against real statements
 
 ---
 
-## 32. `review-result`: Did bank sync hit its target?
+## 33. `review-result`: Did bank sync hit its target?
 
 **When:** Before a number, chart or analysis is reported or decides anything.
 
@@ -1408,7 +1472,7 @@ Verdict: ready; target met
 
 ---
 
-## 33. `review-model`: Adopting the local categoriser
+## 34. `review-model`: Adopting the local categoriser
 
 **When:** A change ships or replaces a model.
 
@@ -1449,7 +1513,7 @@ Monitoring live before the rollout passes 10%
 
 ---
 
-## 34. `review-dependency`: A new package in the timezone fix
+## 35. `review-dependency`: A new package in the timezone fix
 
 **When:** A change adds or upgrades a package, or a release is being prepared.
 
@@ -1482,7 +1546,7 @@ Name close to well-known timezone packages
 
 ---
 
-## 35. `review-feedback`: A teammate's PR comments
+## 36. `review-feedback`: A teammate's PR comments
 
 **When:** Review findings or PR comments arrive.
 
@@ -1514,7 +1578,7 @@ A teammate left three comments on PR #83, the local categoriser for frequent mer
 
 ---
 
-## 36. `fix-ci`: A latency test fails only in CI
+## 37. `fix-ci`: A latency test fails only in CI
 
 **When:** A CI check fails.
 
@@ -1545,7 +1609,7 @@ All checks green
 
 ---
 
-## 37. `architecture-health`: Structure review
+## 38. `architecture-health`: Structure review
 
 **When:** The code is getting hard to change.
 
@@ -1597,7 +1661,7 @@ Next in line: categoriser, sync worker
 
 ---
 
-## 38. `code-health`: Drift and decay check
+## 39. `code-health`: Drift and decay check
 
 **When:** Code, docs, comments or names feel out of date.
 
@@ -1679,7 +1743,7 @@ Next in line: sync worker, upload
 
 ---
 
-## 39. `retro`: After a slow session
+## 40. `retro`: After a slow session
 
 **When:** A long or messy session just ended.
 
@@ -1711,7 +1775,7 @@ The recurring-payments change was small, but the session dragged. codify capture
 
 ---
 
-## 40. `to-skill`: Monthly release notes as a skill
+## 41. `to-skill`: Monthly release notes as a skill
 
 **When:** You keep asking for the same workflow and want it repeatable.
 
@@ -1750,7 +1814,7 @@ disable-model-invocation: true
 
 ---
 
-## 41. `review-skill`: A monthly skills sync
+## 42. `review-skill`: A monthly skills sync
 
 **When:** You adopt a skill, or sync your forks from upstream.
 

@@ -5,6 +5,7 @@
 - Feature S, Feature M, Feature L
 - Bug fix, Refactor, Spike, Incident
 - New application and its expansion variant
+- Adoption: an existing project
 - The glossary in each playbook
 
 ## Rules for every playbook
@@ -133,6 +134,23 @@ Rules:
 an amendment to `product.md` → step 3 for the new area → step 4 only if the
 area needs new architecture → steps 6 and 7. If the repo has no product
 brief, `setup` drafts one from the code and docs first.
+
+## Adoption: an existing project
+
+`setup` runs this once, the first time `/start` runs in a repo that already
+has code. It is not a route; the request that started it routes afterwards.
+
+| Step | Skills | Gate |
+|---|---|---|
+| 1 Setup, both passes: merge existing instruction files into `AGENTS.md`, link the existing tracker, wrap the existing tools in the health command | `setup` | — |
+| 2 Verify | `setup` → `verify-app` | — |
+| 3 Product brief, drafted from what exists | `setup` → `grilling` → `to-product` | Brief accepted |
+| 4 Architecture, as it is | `setup` → `to-design` (system) | Architecture accepted |
+| 5 Baseline health, full sweep | `architecture-health` → `code-health` | Findings wait for your pick |
+| 6 Agent-readiness check | a fresh session | — |
+
+Open issues stay in the tracker. Existing code is not rewritten or given
+tests all at once; the baseline sweep proposes small batches.
 
 ## The glossary in each playbook
 

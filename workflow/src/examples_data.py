@@ -23,7 +23,7 @@ PRODUCT = {
     ],
 }
 
-GROUPS = ["Start a product", "Build a feature", "Fix and restructure", "Explore and respond", "Stay on track", "Understand", "Decide", "Share", "Check", "Improve"]
+GROUPS = ["Start or adopt", "Build a feature", "Fix and restructure", "Explore and respond", "Stay on track", "Understand", "Decide", "Share", "Check", "Improve"]
 
 def S(skill, title, does, you=None, gate=None, out=None, lines=None):
     return {"skill": skill, "title": title, "does": does, "you": you, "gate": gate, "out": out, "lines": lines or []}
@@ -163,6 +163,75 @@ PLAYBOOKS = [
               you="Authorise prod.", gate="Prod"),
         ],
         "takeaway": "An existing product grows by amending the brief, not by writing one giant spec. Setup and the skeleton are skipped because the repo is already agent-ready.",
+    },
+    {
+        "id": "adoption",
+        "name": "Adoption",
+        "group": GROUPS[0],
+        "example": "The statement parser adopts the workflow",
+        "when": "The first /start in a project that already has code but no docs/sdlc/config.",
+        "input": "/start Parse Bank E's new statement format",
+        "router": [
+            ["Repo", "Existing code, tests and CI; no docs/sdlc/config"],
+            ["Instruction files", "A two-year-old CLAUDE.md; no AGENTS.md"],
+            ["Tracker", "GitHub Issues, 23 open"],
+            ["Playbook", "Adoption through setup, then the request routes"],
+        ],
+        "scene0": {
+            "title": "/start finds an existing project",
+            "text": "The statement parser turns uploaded bank statements into transactions for the household app. It was built before the workflow existed: it has tests, CI, a README and an old CLAUDE.md, but no docs/sdlc. Before it routes the request, /start runs setup's adoption path once.",
+            "you": "Confirm. Adoption runs first, then the Bank E request.",
+        },
+        "decisions": "Tracker · Brief · Architecture · which health batches to pick · then the request's own gates",
+        "steps": [
+            S("setup", "Say what it adds",
+              "Lists what adoption adds and asks one question. The repo already uses GitHub Issues, so it stays the tracker and its 23 open issues stay there; none is converted.",
+              you="Keep GitHub Issues."),
+            S("setup", "Merge the instruction files",
+              "The old CLAUDE.md names a test folder that no longer exists. Its content moves into AGENTS.md beside the commands setup found in the Makefile and CI, and CLAUDE.md now holds @AGENTS.md. The stale command is fixed, and the diff is in the setup report.",
+              out="AGENTS.md",
+              lines=["Build: make build",
+                     "Test: make test   (was: pytest tests/unit, folder removed)",
+                     "Health checks: make health",
+                     "Verify end to end: the verify-app skill"]),
+            S("setup", "Controls and standards",
+              "Installs the guard, and puts the ruff, mypy and pytest runs the repo already has behind make health. REVIEW.md starts from the baseline and records what the code already follows. Existing CI stays and gains a health job.",
+              out="docs/sdlc/config",
+              lines=['tracker = "github"',
+                     'health_command = "make health"',
+                     'verify_command = "make verify"']),
+            S("setup → verify-app", "Prove it runs",
+              "Writes verify-app from the existing fixtures: it parses three sample statements end to end and checks their totals. It passes from a clean clone."),
+            S("setup → grilling → to-product", "Draft the brief from what exists",
+              "Drafts the brief from the README, the code and the open issues, describing the service as it is. The grilling settles statement, format version and adapter, which start the glossary.",
+              you="Accept the brief.", gate="Brief accepted",
+              out="docs/sdlc/product.md",
+              lines=["Users: the household app's import pipeline",
+                     "O1 Every supported bank's statements parse without manual fixes",
+                     "G1 Raw statements deleted after import",
+                     "Non-goal: categorising transactions (the app does that)"]),
+            S("setup → to-design", "Draft the architecture as it is",
+              "Drafts architecture.md from the code: a queue consumer, one adapter per bank behind a common interface, and a normaliser. Two existing decisions are hard to reverse and surprising, so they become ADRs.",
+              you="Accept the architecture.", gate="Architecture accepted",
+              out="docs/sdlc/architecture.md",
+              lines=["Components: queue consumer → bank adapters → normaliser",
+                     "Areas: consumer, adapters, normaliser, docs",
+                     "ADR 0001 One format version per bank",
+                     "ADR 0002 Raw files stay in memory, never on disk"]),
+            S("architecture-health → code-health", "Baseline health sweep",
+              "Both run a full sweep, so the health ledger starts with every area at today's commit. Nothing is changed; the findings wait for your pick.",
+              out="docs/sdlc/health-ledger.md",
+              lines=["adapters: six adapters copy the same date logic (escalated to architecture-health)",
+                     "docs: the README lists a bank that is no longer supported",
+                     "normaliser: two tests pass even if the function returns nothing",
+                     "3 batches proposed, 0 picked"]),
+            S("agent-readiness", "Agent-readiness check",
+              "A fresh session, given only the repo, states the commands, conventions and architecture, and runs verify-app. It passes, but the service has no deploy command yet, so parallel worktrees and AFK runs wait; the setup report lists it."),
+            S("start", "Back to the request",
+              "Bank E's format is one new adapter behind the existing interface, so the router picks Feature S. The old issues still wait in GitHub; each becomes an intent or a Bug fix only when /start picks it up.",
+              gate="Feature S: merge"),
+        ],
+        "takeaway": "Adoption describes the project as it is before anything changes: setup merges instead of overwriting, the brief and the architecture are drafted from the code for you to accept, and a full health sweep gives every later run a baseline. Then work routes as usual.",
     },
     {
         "id": "feature-s",
@@ -1912,7 +1981,7 @@ GROUP_OF = {
     "architecture-health": "Improve", "code-health": "Improve", "retro": "Improve",
     "to-skill": "Improve", "review-skill": "Improve",
 }
-ORDER = ["new-app", "expansion", "feature-s", "feature-m", "feature-l", "bug-fix", "refactor",
+ORDER = ["new-app", "expansion", "adoption", "feature-s", "feature-m", "feature-l", "bug-fix", "refactor",
          "spike", "incident"] + list(GROUP_OF)
 for _p in PLAYBOOKS:
     _p["group"] = GROUP_OF.get(_p["id"], _p["group"])

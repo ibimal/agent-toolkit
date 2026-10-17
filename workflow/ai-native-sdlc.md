@@ -127,7 +127,7 @@ You can type any of these yourself, for example to redo a step, but you never ne
 | L | Several units, new architecture, or high risk: security, money, data contracts, model behaviour |
 
 **Intake:**
-- **A repo that isn't set up yet** (no `docs/sdlc/config`) is set up first, so `/start` is the only command a new repo needs: `start` runs `setup`, says what it will add, and asks one question, which tracker to use. On a device or harness the config doesn't list yet, it runs setup's model check the same way.
+- **A repo that isn't set up yet** (no `docs/sdlc/config`) is set up first, so `/start` is the only command a new repo needs: `start` runs `setup`, says what it will add, and asks one question, which tracker to use. In a repo that already has code, `setup` runs the adoption path (4.6) once, and the request then routes as usual. On a device or harness the config doesn't list yet, it runs setup's model check the same way.
 - Every input is matched against existing intents and becomes a new intent, an amendment, a duplicate, or a replacement for an older intent. You confirm.
 - When a product brief exists, an input that serves no product outcome or guardrail is flagged as possible scope creep.
 - Input about work already in progress, for example `/start continue recurring payments`, resumes that change's playbook at its next step and reads its handoff if there is one.
@@ -138,7 +138,7 @@ You can type any of these yourself, for example to redo a step, but you never ne
 
 ## 4. Playbooks
 
-A playbook is a fixed sequence of skills. `start` copies its steps into the task list, and a skipped step stays in the list with a one-line reason. New application is composite: its steps run other playbooks. The skills around the playbooks (`wayfinder`, `handoff`, `afk` and the two `-health` skills) are never a route of their own; 4.2 to 4.4 say how they work, and 4.5 holds the rules for every other skill outside the playbooks.
+A playbook is a fixed sequence of skills. `start` copies its steps into the task list, and a skipped step stays in the list with a one-line reason. New application is composite: its steps run other playbooks. The skills around the playbooks (`wayfinder`, `handoff`, `afk` and the two `-health` skills) are never a route of their own; 4.2 to 4.4 say how they work, and 4.5 holds the rules for every other skill outside the playbooks. 4.6 says how an existing project adopts the workflow.
 
 | Playbook | Sequence | Human gates | Artifacts |
 |---|---|---|---|
@@ -247,6 +247,7 @@ Change since an area's last review is counted from the commit the ledger recorde
 - **You, any time.** Name an area, for example `/code-health categoriser`, or ask for `full`.
 - **The merge hook:** after each merge, `ship` counts the merges on main since the commit the ledger recorded. The count comes from git, so every merge counts however it was made; a post-merge git hook, or a CI job where there is CI, can run the same count. At about 20, it starts `architecture-health`, then `code-health`, as an AFK run; the report waits for your pick. Drift grows with change, not with time, so busy periods get more runs and quiet periods get none. Tune the number so each report stays small.
 - **Each milestone review:** both skills do a full sweep with no budget, and their findings feed backlog refinement for the next milestone.
+- **Adoption:** when an existing project adopts the workflow, both skills do a full sweep, so the health ledger starts with every area (4.6).
 
 **Rules:**
 - **Coverage is guaranteed by runs, not dates.** The reserved slot reaches every area within as many runs as there are areas, and the milestone sweep covers everything once per milestone.
@@ -398,6 +399,27 @@ Change since an area's last review is counted from the commit the ledger recorde
 
 - **Built-ins in Claude Code:** `/btw` for a side question that shouldn't enter the conversation, `/recap` for a one-line summary, `/deep-research` for a broad survey across many web sources (`look-up` stays the tool for one fact a decision needs, from its primary source), `/autofix-pr` to watch a PR from the cloud, `/insights` across sessions, `/skill-doctor` for each skill's context cost and use. The skills above stay portable to other harnesses.
 
+### 4.6 Adopting the workflow in an existing project
+
+**When:** the first `/start` in a repo that already has code but no `docs/sdlc/config`. **Ends:** when the agent-readiness check has run; the request that started it then routes as usual. Adoption is not a route: `setup` runs it once, and from then on the router routes work.
+
+| Step | Skills | Exit criteria | Gate |
+|---|---|---|---|
+| 1 Setup, both passes | setup | Tracker linked, with existing issues left where they are; models and reviewer ladder in `docs/sdlc/config`; guard active; existing instruction files merged into `AGENTS.md`, with `CLAUDE.md` holding `@AGENTS.md`; the health command wraps the tools the repo already runs; `REVIEW.md` starts from the baseline and records the conventions the code already follows; existing CI kept | — |
+| 2 Verify | setup → verify-app | `verify-app` written from the existing test and run commands, and passing from a clean clone, or its gaps listed | — |
+| 3 Product brief | setup (draft) → grilling (product level) → to-product | `product.md` drafted from the README, docs, code and open issues, describing the product as it is; `GLOSSARY.md` created with the first settled terms | Brief accepted |
+| 4 Architecture | setup (draft) → to-design (system) | `architecture.md` describes the components as they are; existing decisions that are hard to reverse and surprising recorded as ADRs; existing decision records linked, not moved | Architecture accepted |
+| 5 Baseline health | architecture-health → code-health, full sweep | The health ledger records every area at the current commit; findings batched; nothing changed | — (findings wait for your pick) |
+| 6 Agent-readiness check | a fresh session, given only the repo | It states the commands, conventions and architecture and runs `verify-app`; missing controls (CI, deploy, `verify-app`, guard) listed in the setup report | — |
+
+**Rules:**
+- **Describe what is, not what should be.** The brief and the architecture describe the project as it is today. What should change becomes intents, and Refactor or Feature work through `/start`.
+- **Merge, never overwrite.** `setup` keeps every existing file. The content of an existing `CLAUDE.md` moves into `AGENTS.md`, its stale facts (commands that fail, files that are gone) are fixed or flagged, and the diff goes in the setup report. Existing CI, hooks and decision records stay.
+- **Link the tracker; don't import it.** Open issues stay in the tracker. An issue becomes an intent, or a Bug fix, when `/start` picks it up.
+- **No retrofits by default.** Existing code is not rewritten to meet `REVIEW.md`, and missing tests are not added all at once. The baseline sweep proposes small batches, and you pick them. New and changed code meets the standards through `tidy` and `review-change`.
+- **Autonomy follows readiness, as always.** Parallel worktrees and AFK runs wait until CI, deploy, `verify-app` and the guard exist; the setup report says which are missing.
+- **The glossary grows from conversation.** Terms come from grilling the drafted brief, not from scraping identifiers.
+
 ---
 
 ## 5. Gates and autonomy
@@ -458,7 +480,7 @@ Everything else proceeds and reports evidence. On Feature M the plan is a report
 | Run trail | For one AFK run: one row per default picked, pivot, check and gate held (what, why, evidence, result), topped by the hand-back | Agent | Committed with the run's changes |
 | Health ledger | For each area and each `-health` skill: the commit of its last review, what was found and what is still open; plus merges since the last run and what is next in line | Agent | Permanent |
 
-`product.md` and `architecture.md` are required on a new application and optional elsewhere; `setup` can draft both for an existing repo from its code and docs. A handoff goes to the device's temp folder; when you switch devices it goes into the change folder on the branch instead.
+`product.md` and `architecture.md` are required on a new application, and `setup` drafts both from the code and docs when an existing project adopts the workflow (4.6). A handoff goes to the device's temp folder; when you switch devices it goes into the change folder on the branch instead.
 
 ### 6.2 Product, intent and spec rules
 
@@ -523,7 +545,7 @@ evals/                             incident, agent-config and agent-readiness ca
 
 | Stage | When | Who |
 |---|---|---|
-| Created | With the first term settled in conversation: on a new application, while grilling the product brief; on an existing repo, the first time a grilling settles a term. Never as an empty file | `glossary`, alongside grilling |
+| Created | With the first term settled in conversation: on a new application, while grilling the product brief; on an existing project, while grilling the brief drafted at adoption (4.6). Never as an empty file | `glossary`, alongside grilling |
 | Written | The moment a term is settled, in any grilling, `wayfinder` ticket or `architecture-health` session, or when `to-design` names a new concept. Never batched for later | `glossary` drafts the entry; you confirm it, because the meaning is yours |
 | Read | Before a skill writes words that will last: the writers, `implement` and `tdd` (names in code and tests), `tidy`, `ship` (the PR), `technical-writing`; and whenever `huh`, `how`, `why`, `explore-data` or `diagnose-metric` explain something | Every skill, as a habit |
 | Checked | On every change, `review-change` checks new names against it; on every `code-health` run, the health checks catch avoided synonyms and judgement catches one word used two ways | `review-change`, `code-health` |
@@ -650,7 +672,7 @@ It is never finished. The map starts small and keeps itself current as the work 
 | `to-spec` | Playbook step, or you | Accepted intent → `spec.md` | Fork: mattpocock `to-spec` |
 | `to-design` | Playbook step, or you | Spec and ADRs → `design.md` for one change, with a threat model when the change crosses a trust boundary; system mode writes `architecture.md`; on archive, merges a change's structural changes into it | Write (patterns: AI-DLC domain and logical design, Spec Kit plan, Kiro design, OpenAI `security-threat-model`) |
 | `to-tickets` | Playbook step, or you | Spec → vertical slices with blocking edges and TDD seams in `plan.md` | Fork: mattpocock `to-tickets` |
-| `setup` | `/start`, when the repo isn't set up, at New application steps 1 and 5, or on a device or harness the config doesn't list yet; or you | Docs layout, tracker link, reachable models and reviewer ladder, the destructive-command guard, `AGENTS.md` and `CLAUDE.md` stubs (`AGENTS.md` asks for numbered questions whenever a reply asks more than one); once the stack is known, commands, hooks, the verify command, the baseline health checks, `REVIEW.md` standards (4.4) and CI where wanted, with uv, ruff and a type checker for Python. On an existing repo it can draft `product.md` and `architecture.md` from code and docs | Write (patterns: mattpocock `setup`, pstack `setup`, Astral `uv`/`ruff`/`ty`, Trail of Bits `modern-python`) |
+| `setup` | `/start`, when the repo isn't set up (in an existing project, through the adoption path in 4.6), at New application steps 1 and 5, or on a device or harness the config doesn't list yet; or you | Docs layout, tracker link, reachable models and reviewer ladder, the destructive-command guard, `AGENTS.md` and `CLAUDE.md` stubs (`AGENTS.md` asks for numbered questions whenever a reply asks more than one); once the stack is known, commands, hooks, the verify command, the baseline health checks, `REVIEW.md` standards (4.4) and CI where wanted, with uv, ruff and a type checker for Python. In an existing project it runs the adoption path: merges existing instruction files, drafts `product.md` and `architecture.md` from code and docs, and starts the health ledger with a full sweep | Write (patterns: mattpocock `setup`, pstack `setup`, Astral `uv`/`ruff`/`ty`, Trail of Bits `modern-python`) |
 | `review-plan` | Playbook step, or you | Scope challenge and engineering review of a plan, an MVP cut or an architecture, via the reviewer ladder | Write (patterns: gstack `plan-ceo-review`, `plan-eng-review`) |
 | `implement` | Playbook step, or you | Per slice: tdd → verify → commit; worktrees for independent slices | Fork: mattpocock `implement` |
 | `ship` | Playbook step, or you | PR with intent, evidence, reviewer rung and merge-danger call → CI (a failing check goes to `fix-ci`) → deploy gate → post-deploy check; after merge, adds new tables, columns, events and metric queries to `data-context` | Fork: mattpocock `pr` (pattern: gstack `ship`) |

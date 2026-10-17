@@ -16,7 +16,9 @@ for a need. [playbooks.md](playbooks.md) holds each playbook's steps.
 If `docs/sdlc/config` does not exist, run `setup` first. Say what it will
 add, and ask one question: which tracker to use. If the config does not
 list this device or harness, run only setup's model check. A new repo needs
-no other command.
+no other command. In a repo that already has code, setup runs its
+adoption path first; [playbooks.md](playbooks.md) lists its steps. Then route
+the request as usual.
 
 ## 2. With no request: report and suggest
 

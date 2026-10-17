@@ -1,6 +1,6 @@
 ---
 name: to-product
-description: "Turns a grilled product vision into docs/sdlc/product.md (vision, users, problems, outcomes with metrics, guardrails, constraints, non-goals, riskiest assumptions, milestones and the MVP), and amends it later while listing the intents each amendment affects. Use at New application step 2, in the expansion variant, or when the user asks to write or amend the product brief."
+description: "Turns a grilled product vision into docs/sdlc/product.md (vision, users, problems, outcomes with metrics, guardrails, constraints, non-goals, riskiest assumptions, milestones and the MVP), and amends it later while listing the intents each amendment affects. Use at New application step 2, when an existing project adopts the workflow, in the expansion variant, or when the user asks to write or amend the product brief."
 metadata:
   inspired-by: https://docs.bmad-method.org/ and https://github.com/garrytan/gstack (office-hours)
 ---
@@ -30,6 +30,13 @@ Write `docs/sdlc/product.md` with these sections:
 
 The brief names no solution: no technology, no architecture, no screens.
 Those come later and must serve the brief.
+
+## An existing project
+
+When `setup` adopts an existing project, start from its draft and describe
+the product as it is today: the users it serves, the outcomes it already
+delivers, and their metrics where they exist. What should change becomes
+intents, not new outcomes in the brief.
 
 ## Amending the brief
 

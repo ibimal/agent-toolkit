@@ -1,6 +1,6 @@
 ---
 name: to-design
-description: "Writes design.md for one Feature L change from its spec and ADRs (structure, interfaces, data model, and a threat model when the change crosses a trust boundary); in system mode writes docs/sdlc/architecture.md for a new application; on archive, merges a change's structural changes into architecture.md. Use when a playbook reaches to-design or New application step 4."
+description: "Writes design.md for one Feature L change from its spec and ADRs (structure, interfaces, data model, and a threat model when the change crosses a trust boundary); in system mode writes docs/sdlc/architecture.md for a new application; on archive, merges a change's structural changes into architecture.md. Use when a playbook reaches to-design, at New application step 4, or when an existing project adopts the workflow."
 metadata:
   inspired-by: https://github.com/github/spec-kit, https://kiro.dev/docs/specs/ and https://github.com/openai/skills (security-threat-model)
 ---
@@ -46,6 +46,11 @@ ADR or deferred with a reason. A sensible default that nobody spiked is
 recorded as a provisional ADR. For a model or data component, fix the eval
 set, the quality thresholds and the data contracts here; they become part
 of `verify-app`. The user accepts the architecture at a gate.
+
+**An existing project.** At adoption, describe the architecture as it is,
+not as it should be. Record an existing decision as an ADR only when it is
+hard to reverse and surprising, and link existing decision records instead
+of moving them.
 
 ## Archive mode
 

@@ -66,6 +66,8 @@ clarity, then concision.
   jargon.
 - Use an analogy only when it makes a concept or mechanism clearer. Do not
   use it in place of the exact explanation.
+- Say what you mean literally. Use a figurative phrase only when no literal
+  phrase is as precise.
 
 ## Shape the response
 
@@ -73,6 +75,9 @@ clarity, then concision.
   or purpose.
 - Then add reasoning, evidence, details, and caveats as needed for
   understanding, action, or verification.
+- After long work that the reader did not watch, write the final message
+  as a fresh start: the outcome first, then what you need from the reader.
+  Leave out the shorthand you used while working.
 - Prefer connected prose for explanations.
 - Use numbered lists for ordered steps, with one primary action per step.
 - Use bullets only for parallel items.

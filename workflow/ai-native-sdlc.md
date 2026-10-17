@@ -4,7 +4,7 @@ Living reference for how development work runs with AI agents, skills and coding
 
 Companions: worked examples of every playbook and of the skills outside them in [examples.md](examples.md), played as animated walkthroughs in [walkthroughs.html](walkthroughs.html) (open it in a browser). Both are generated from `src/`; see [README.md](README.md).
 
-Last updated: 2026-10-16
+Last updated: 2026-10-17
 
 ---
 
@@ -177,7 +177,7 @@ A playbook is a fixed sequence of skills. `start` copies its steps into the task
 
 | Step | Skills | Exit criteria | Gate |
 |---|---|---|---|
-| 1 Setup, first pass | setup (stack-agnostic) | Docs layout, tracker decision and reviewer ladder committed; `CLAUDE.md` and `REVIEW.md` stubs exist; destructive-command guard active; no empty glossary is created | — |
+| 1 Setup, first pass | setup (stack-agnostic) | Docs layout, tracker decision and reviewer ladder committed; `AGENTS.md`, `CLAUDE.md` and `REVIEW.md` stubs exist; destructive-command guard active; no empty glossary is created | — |
 | 2 Product brief | grilling (product level) → to-product | `product.md` states vision, users, problems, outcomes with metrics, guardrails, constraints, non-goals, riskiest assumptions and milestones, with the MVP defined by the outcome it proves; `GLOSSARY.md` created with the first resolved terms | Brief accepted |
 | 3 Backlog | to-backlog → size-impact (when intents compete for the cut) → grilling and to-intent for each MVP intent → review-plan (scope challenge on the MVP) | Every MVP intent accepted, traced to a product outcome, with a success metric and its dependencies; later intents proposed with a one-line outcome; open technical decisions listed, and charted with `/wayfinder` when they need more than one session | MVP intents, cut and order |
 | 4 Architecture | Spike, or the `/wayfinder` map's tickets, for each decision that is expensive to reverse → ADR; to-design (system) → review-plan | Every open decision resolved by an ADR or deferred with a reason; `architecture.md` covers components and boundaries, core data model, integrations, environments and deployment, testing and verification approach, and observability; every product constraint maps to a choice | Architecture accepted |
@@ -281,13 +281,13 @@ Change since an area's last review is counted from the commit the ledger recorde
 
 `REVIEW.md` also sets the thresholds that raise a signal. The defaults are cyclomatic complexity over 10, functions over about 50 lines, and more than 5 parameters.
 
-**When standards disagree:** the repo's own rules win (`CLAUDE.md`, `REVIEW.md`, ADRs), then the deep-module vocabulary, then general guidance such as Clean Code. Where "keep functions small" would produce shallow pass-through code, deep modules win. A metric is a signal, never a reason on its own: split a function because it does two jobs, not because it is long.
+**When standards disagree:** the repo's own rules win (`AGENTS.md`, `REVIEW.md`, ADRs), then the deep-module vocabulary, then general guidance such as Clean Code. Where "keep functions small" would produce shallow pass-through code, deep modules win. A metric is a signal, never a reason on its own: split a function because it does two jobs, not because it is long.
 
 **Drift:**
 
 | Drift | Compared | Health checks catch | Judgement catches |
 |---|---|---|---|
-| Docs | README, runbook, `CLAUDE.md`, docstrings vs the code | Referenced files, symbols and links that no longer exist; documented commands that fail | Text that no longer describes what the code does |
+| Docs | README, runbook, `AGENTS.md`, docstrings vs the code | Referenced files, symbols and links that no longer exist; documented commands that fail | Text that no longer describes what the code does |
 | Living specs | Each requirement vs the code's behaviour | — | Requirements the code contradicts or no longer meets, and behaviour no spec describes |
 | Comments | Each comment vs the code beside it | Commented-out code; stale TODOs | Comments describing old behaviour or restating the code; a missing "why" where the code is not obvious |
 | Architecture | The code vs `architecture.md` and the ADRs | Import contracts: layers, forbidden imports, cycles | Responsibilities in the wrong module; ADR decisions not followed. Fixes escalate to `architecture-health` |
@@ -318,7 +318,7 @@ Change since an area's last review is counted from the commit the ledger recorde
   4. it asks nothing: the last reply in plain words.
 
   `/huh` covers this session since your last message; `/start` on its own covers all your work.
-- **Questions are numbered** whenever a reply asks more than one, so `/huh Q2` can point at one. Grilling does it by design. For every other reply the rule sits in the `CLAUDE.md` that `setup` writes, because `huh` loads only when you type it.
+- **Questions are numbered** whenever a reply asks more than one, so `/huh Q2` can point at one. Grilling does it by design. For every other reply the rule sits in the `AGENTS.md` that `setup` writes, because `huh` loads only when you type it.
 - **`readback`** restates your goal, the problem, the constraints and what done looks like, and flags what it is unsure of; any preference call it finds goes to you before work starts.
 
 **Understand**
@@ -409,13 +409,13 @@ Change since an area's last review is counted from the commit the ledger recorde
 Everything else proceeds and reports evidence. On Feature M the plan is a report, not a gate. Confirmations inside a step are not separate gates: you confirm a glossary term or a metric definition as it is written (6.5, 6.6), and an AFK run leaves them for the hand-back.
 
 **Deterministic controls (hooks and CI):**
-- Protected paths cannot be edited.
+- Protected paths cannot be edited: the guard blocks edits to every path listed in `docs/sdlc/locks`.
 - Format and lint run after edits.
-- Tests named as the regression test cannot be edited while a fix is in progress.
+- Tests named as the regression test cannot be edited while a fix is in progress: `diagnose-bug` adds the test to `docs/sdlc/locks` and removes it once the fix is verified.
 - Production deploy requires authorisation.
 - Destructive commands are blocked: force-push, `reset --hard`, deleting branches, `rm -rf` outside the worktree, dropping tables, and skipping git hooks with `--no-verify`. `setup` installs the guard.
 - The agent's own configuration (`CLAUDE.md`/`AGENTS.md`, skills, hooks) is regression-tested by an eval suite whenever it changes.
-- Health checks, behind the command named in `docs/sdlc/config` (`make health` by default), installed by `setup` and extended by `codify` and `code-health`: format and lint, type check, complexity, dead code, import contracts from `architecture.md`, unused or missing dependencies, committed secrets, docs that point at files, functions or commands that no longer exist, `CLAUDE.md` commands that fail, and names that use a synonym `GLOSSARY.md` says to avoid. `code-health` runs them every time; CI or git hooks run them too where they exist.
+- Health checks, behind the command named in `docs/sdlc/config` (`make health` by default), installed by `setup` and extended by `codify` and `code-health`: format and lint, type check, complexity, dead code, import contracts from `architecture.md`, unused or missing dependencies, committed secrets, docs that point at files, functions or commands that no longer exist, `AGENTS.md` commands that fail, and names that use a synonym `GLOSSARY.md` says to avoid. `code-health` runs them every time; CI or git hooks run them too where they exist.
 
 **Autonomy follows readiness:** parallel worktrees and AFK runs start only once CI, deploy, `verify-app` and the destructive-command guard exist. On a new application that is after the walking skeleton.
 
@@ -486,14 +486,16 @@ product outcome  ←  intent  ←  change (spec, design, plan)  ←  PR
 Local files in the repo by default. `setup` can link a repo to a tracker (GitHub Issues, Jira, Linear); linked items carry IDs both ways (ticket ID in the artifact, commit SHA in the ticket).
 
 ```
-CLAUDE.md / AGENTS.md              standing context, under a page
+AGENTS.md, CLAUDE.md               standing context, under a page; CLAUDE.md holds @AGENTS.md
 GLOSSARY.md                        the project's words (6.5); GLOSSARY-MAP.md lists one per context in a multi-context repo
 REVIEW.md                          code standards, thresholds and precedence (4.4); review axes and severity definitions
 .claude/skills/verify-app/         project-local verification skill
 .claude/agents/                    verifier and reviewer definitions
 .claude/settings.json              hooks, including the destructive-command guard
+.claude/hooks/guard.py             the guard: blocks destructive commands and edits to locked paths
 docs/runbook.md
 docs/sdlc/config                   tracker link, reachable models, reviewer ladder, health command
+docs/sdlc/locks                    protected paths and the regression test of a fix in progress
 docs/sdlc/product.md               product brief
 docs/sdlc/architecture.md
 docs/sdlc/intents/I-NNNN-<slug>.md
@@ -554,7 +556,7 @@ It is never finished. The map starts small and keeps itself current as the work 
 
 **Rules:**
 - **Facts go in on their own; meaning waits for you.** A fact is anything checkable against the data or the schema, and it goes in with its evidence. What a metric should count is a preference call, so it is only ever proposed.
-- **Every change carries its source and date** (a query, a merged change, a profile, a diagnosis, something you said) and is a commit in the skills repo, so any automatic change can be traced and reverted.
+- **Every change carries its source and date** (a query, a merged change, a profile, a diagnosis, something you said) and is a commit in the skills repo, so any automatic change can be traced and reverted. In a public skills repo the map folder is git-ignored instead, so schemas and definitions never reach the public history; the source and date then live in each entry.
 - **Checked on touch, not on a timer.** An entry is re-checked whenever a query uses it. Nothing is deleted automatically: an entry nothing uses is flagged by `code-health` and goes when you say so.
 - **The glossary says what a word means; `data-context` says where it lives and how to compute it.** Each metric links to its glossary term, and the glossary holds no SQL.
 - **Definitions carry their date,** so any number can be traced to the definition it used.
@@ -594,9 +596,9 @@ It is never finished. The map starts small and keeps itself current as the work 
 
 ## 9. Learning and upkeep
 
-- **`codify` ends every change that taught something.** In order of preference, the lesson becomes a lint (a Semgrep rule when the linter can't express it), hook or test; a glossary entry when the lesson is about what a word means; a skill or `CLAUDE.md` edit; or a note in `docs/solutions/`.
-- **Repeated mistakes:** a mistake made twice gets a structural fix or a `CLAUDE.md` line.
-- **Session retros:** after a long or messy session, `/retro` proposes fixes to the agent's environment. Accepted fixes become, in order of preference, a check or command, a skill edit through `to-skill`, or a `CLAUDE.md` line.
+- **`codify` ends every change that taught something.** In order of preference, the lesson becomes a lint (a Semgrep rule when the linter can't express it), hook or test; a glossary entry when the lesson is about what a word means; a skill or `AGENTS.md` edit; or a note in `docs/solutions/`.
+- **Repeated mistakes:** a mistake made twice gets a structural fix or an `AGENTS.md` line.
+- **Session retros:** after a long or messy session, `/retro` proposes fixes to the agent's environment. Accepted fixes become, in order of preference, a check or command, a skill edit through `to-skill`, or an `AGENTS.md` line.
 - **Archive:** a finished change moves to `changes/archive/`. Its spec deltas merge into living specs, its structural changes merge into `architecture.md` when one exists, and its intent moves to measuring.
 - **Milestone review:** after each milestone release, the product metrics are measured against `product.md` and checked with `review-result` (with `diagnose-metric` for any that moved unexpectedly), both `-health` skills run a full sweep, the brief and the backlog are amended with what they all found, `size-impact` sizes the candidates for the next milestone, and the next milestone runs as the New application expansion variant.
 - **Incidents** become eval cases.
@@ -648,12 +650,12 @@ It is never finished. The map starts small and keeps itself current as the work 
 | `to-spec` | Playbook step, or you | Accepted intent → `spec.md` | Fork: mattpocock `to-spec` |
 | `to-design` | Playbook step, or you | Spec and ADRs → `design.md` for one change, with a threat model when the change crosses a trust boundary; system mode writes `architecture.md`; on archive, merges a change's structural changes into it | Write (patterns: AI-DLC domain and logical design, Spec Kit plan, Kiro design, OpenAI `security-threat-model`) |
 | `to-tickets` | Playbook step, or you | Spec → vertical slices with blocking edges and TDD seams in `plan.md` | Fork: mattpocock `to-tickets` |
-| `setup` | `/start`, when the repo isn't set up, at New application steps 1 and 5, or on a device or harness the config doesn't list yet; or you | Docs layout, tracker link, reachable models and reviewer ladder, the destructive-command guard, a `CLAUDE.md` stub (it asks for numbered questions whenever a reply asks more than one); once the stack is known, commands, hooks, the verify command, the baseline health checks, `REVIEW.md` standards (4.4) and CI where wanted, with uv, ruff and a type checker for Python. On an existing repo it can draft `product.md` and `architecture.md` from code and docs | Write (patterns: mattpocock `setup`, pstack `setup`, Astral `uv`/`ruff`/`ty`, Trail of Bits `modern-python`) |
+| `setup` | `/start`, when the repo isn't set up, at New application steps 1 and 5, or on a device or harness the config doesn't list yet; or you | Docs layout, tracker link, reachable models and reviewer ladder, the destructive-command guard, `AGENTS.md` and `CLAUDE.md` stubs (`AGENTS.md` asks for numbered questions whenever a reply asks more than one); once the stack is known, commands, hooks, the verify command, the baseline health checks, `REVIEW.md` standards (4.4) and CI where wanted, with uv, ruff and a type checker for Python. On an existing repo it can draft `product.md` and `architecture.md` from code and docs | Write (patterns: mattpocock `setup`, pstack `setup`, Astral `uv`/`ruff`/`ty`, Trail of Bits `modern-python`) |
 | `review-plan` | Playbook step, or you | Scope challenge and engineering review of a plan, an MVP cut or an architecture, via the reviewer ladder | Write (patterns: gstack `plan-ceo-review`, `plan-eng-review`) |
 | `implement` | Playbook step, or you | Per slice: tdd → verify → commit; worktrees for independent slices | Fork: mattpocock `implement` |
 | `ship` | Playbook step, or you | PR with intent, evidence, reviewer rung and merge-danger call → CI (a failing check goes to `fix-ci`) → deploy gate → post-deploy check; after merge, adds new tables, columns, events and metric queries to `data-context` | Fork: mattpocock `pr` (pattern: gstack `ship`) |
 | `release-readiness` | Playbook step, or you | Before a milestone release: NFRs from specs and the brief verified, security review, `review-dependency` across the lockfile, alerts in place, backups and migrations rehearsed, rollback rehearsed, runbook current | Write (pattern: BMAD readiness check, gstack `cso`, `canary`) |
-| `codify` | Playbook step, or you | Turn what a change taught into the most structural fix available: a lint or Semgrep rule, hook or test; a glossary entry when the lesson is about what a word means; then a skill or `CLAUDE.md` edit; then a note | Write (patterns: compound `ce-compound`, Trail of Bits `semgrep-rule-creator`) |
+| `codify` | Playbook step, or you | Turn what a change taught into the most structural fix available: a lint or Semgrep rule, hook or test; a glossary entry when the lesson is about what a word means; then a skill or `AGENTS.md` edit; then a note | Write (patterns: compound `ce-compound`, Trail of Bits `semgrep-rule-creator`) |
 | `grilling` | Agent | Rounds of numbered questions, each with a recommended answer and why it matters, until every branch is resolved; runs `glossary` alongside it; ends with a readback | Fork: mattpocock `grilling` |
 | `glossary` | Agent, alongside every grilling; or you | Challenge fuzzy or conflicting terms, write each settled term to `GLOSSARY.md` at once (6.5), and offer an ADR when a decision earns one | Fork: mattpocock `domain-modeling` (`local.md` keeps ADRs in `docs/sdlc/adr/`) |
 | `codebase-design` | Agent | Shared vocabulary for deep modules, seams and interfaces; used by `architecture-health`, `to-design` and `review-change` | Fork: mattpocock `codebase-design` |
@@ -677,7 +679,7 @@ It is never finished. The map starts small and keeps itself current as the work 
 | `make-chart` | Agent whenever a chart is made; or you | Chart form from the question, uncertainty shown, honest axes, direct labels, accessible colours, the claim as the title | Fork: K-Dense `scientific-visualization` (pattern: Anthropic `data-visualization`) |
 
 **Adoption order:**
-- **Day one:** `setup`, `grilling`, `to-spec`, `implement` with `tdd`, `verify-app`, `review-change`, `huh` and `polish`, plus a short `CLAUDE.md`, one check command, format and lint hooks, and the guard.
+- **Day one:** `setup`, `grilling`, `to-spec`, `implement` with `tdd`, `verify-app`, `review-change`, `huh` and `polish`, plus a short `AGENTS.md`, one check command, format and lint hooks, and the guard.
 - **Weeks two to four:** `start`, `ship`, `codify`, `to-intent`, `to-tickets`, `diagnose-bug`, `look-up`, `review-result`, `second-opinion` and `review-dependency`; with data work, `data-context`, `explore-data`, `write-notebook`, `make-chart`, `diagnose-metric` and `preregister`; with planning, `brainstorm` and `size-impact`.
 - **When the need appears:** the rest, and `review-model` with the first model you ship. Add a skill the second time you feel the problem it solves; a typed skill costs nothing until you use it.
 - **A new application** also needs `to-product`, `to-backlog`, `to-design`, `review-plan`, `size-impact` and `release-readiness`.
@@ -685,8 +687,8 @@ It is never finished. The map starts small and keeps itself current as the work 
 ### 10.2 Sourcing forked skills
 
 - **Ownership:** upstream owns the method (the `SKILL.md` body). You own the folder name, `name`, `description`, the trigger setting, and additions in `local.md`, which `SKILL.md` loads and sync never merges.
-- **Provenance per skill:** upstream repo and path, pinned commit, state, and a changelog of your edits with reasons.
-- **Rename map:** one file maps upstream names to yours. Sync applies it to both upstream versions before comparing, so renames never show up as changes or conflicts.
+- **Provenance per skill:** upstream repo and path, the upstream authors and licence, pinned commit, state, and a changelog of your edits with reasons. The upstream licence file stays in the fork's folder.
+- **Rename map:** one file maps upstream names to yours. It applies to `SKILL.md` only; licences, credits and other supporting files stay verbatim. Sync applies it to both upstream versions before comparing, so renames never show up as changes or conflicts.
 - **Sync** compares the pinned base, the new upstream and yours:
   - only upstream changed → take it, record a new pin;
   - only you changed → nothing to do;
@@ -702,7 +704,8 @@ agent-skills/
   skills/<your-name>/
     SKILL.md        your frontmatter + upstream body
     local.md        your additions
-    PROVENANCE      upstream, pin, state, changelog
+    PROVENANCE      upstream, authors, licence, pin, state, changelog
+    LICENSE         the upstream licence
   rename-map
 ```
 
@@ -754,6 +757,8 @@ agent-skills/
 | [PEP 8](https://peps.python.org/pep-0008/), [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html) | Baseline Python style |
 | [Superpowers](https://github.com/obra/superpowers) | Small tasks, TDD discipline, verification before completion, receiving code review |
 | [anthropics/skills](https://github.com/anthropics/skills) | Skill authoring with evals (our `to-skill`) |
+| [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) — Anthropic | Descriptions, conciseness, progressive disclosure and evaluation rules in `writing-for-agents` |
+| [HumanLayer skills](https://github.com/humanlayer/skills) | The PR summary visuals in `ship`, from `show-me` by way of mattpocock `pr` |
 | [Start with a walking skeleton](https://oreilly.com/library/view/97-things-every/9780596800611/ch60.html) — 97 Things Every Software Architect Should Know | Walking skeleton (Cockburn): minimal end-to-end implementation linking all main components |
 | [Forget the walking skeleton, put it on crutches](https://gojko.net/2014/06/09/forget-the-walking-skeleton-put-it-on-crutches/) — Gojko Adzic | Skeleton on crutches when the riskiest assumption is about value |
 | [Addy Osmani](https://addyosmani.com/blog/ai-coding-workflow/), [Harper Reed](https://harper.blog/2025/02/16/my-llm-codegen-workflow-atm/) | Spec first, small chunks, commit often |

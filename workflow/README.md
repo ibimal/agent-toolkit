@@ -1,9 +1,10 @@
 # AI-native SDLC workflow
 
 The design for an AI-native development workflow: the playbooks, the
-skills they use, and the rules that connect them. The skills it names are
-built into `skills/` over time. Until a skill exists there, this design is
-its spec.
+skills they use, and the rules that connect them. Every skill it names is
+built in `skills/`, except `verify-app`, which `setup` writes into each
+product repo. The design stays the spec: when a skill changes, the doc
+changes in the same commit.
 
 ## Files
 

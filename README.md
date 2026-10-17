@@ -1,14 +1,19 @@
 # agent-toolkit
 
-Personal agent skills and an always-on style file, shared across devices
-and agent harnesses (Claude Code, GitHub Copilot CLI, code-puppy).
+The skills for an AI-native development workflow, an always-on style
+file, and a small CLI that links them into each agent harness on each
+device. The harnesses are Claude Code, GitHub Copilot CLI and code-puppy;
+code-puppy cannot load skills, so it gets the style file only.
+
+The workflow itself is described at
+<https://ibimal.github.io/agent-toolkit/>.
 
 ## Layout
 
 ```
 agent-toolkit/
 ├── README.md
-├── LICENSE                    # MIT
+├── LICENSE                    # MIT, for this repo's own work
 ├── AGENTS.md                  # rules for agents working on this repo
 ├── GLOSSARY.md                # glossary
 ├── CLAUDE.md                  # imports AGENTS.md for Claude Code
@@ -54,6 +59,22 @@ device, use `git@github.com:ibimal/agent-toolkit.git` instead.
 as your own skill with the same name. It reports a conflict, installs
 everything else, and exits 1.
 
+## Skills
+
+`skills/` holds the 55 skills that the workflow doc catalogues (section
+10.1). The doc's 56th skill, `verify-app`, is written into each product
+repo by `setup`. Three skills cover most days:
+
+| Type | When |
+|---|---|
+| `/start <request>` | Any piece of work. On its own, it shows what is in progress and what waits for you. |
+| `/huh` | You don't follow the last message, or you are back and need catching up. |
+| `/polish` | Before you send a message you wrote. |
+
+14 skills start only when you type them. The other 41 can also start
+when the agent needs them, inside a playbook or another skill. 40 skills
+are forks of upstream skills; 15 are written from the workflow doc.
+
 ## Tests
 
 ```
@@ -66,13 +87,21 @@ the size-impact simulation.
 
 ## Add a skill
 
-Copy an existing skill folder, rename it, update `name` and `description`,
-then run `bin/toolkit check`.
+Every skill follows the workflow doc, so a new skill starts there:
+
+1. Add the skill to `workflow/ai-native-sdlc.md`: its catalog row in
+   section 10.1, and its place in sections 2 and 2.3. Name it by the
+   rules in section 10.3, and check that no harness reserves the name.
+2. Write the skill, or fork it as the next section describes. `/to-skill`
+   can draft it.
+3. Add its worked example to `workflow/src/examples_data.py`, then run
+   `python3 workflow/src/build.py` and `python3 workflow/src/check_doc.py`.
+4. Run `bin/toolkit check` and the tests.
 
 ## Fork a skill
 
-A fork is a skill copied from an upstream repo. Until the `vendor`
-command exists, you update a fork by hand. Its folder holds these files:
+A fork is a skill copied from an upstream repo. Its folder holds these
+files:
 
 - `SKILL.md`: this repo's frontmatter, a note that loads `local.md` and
   marks the skill as changed, and the upstream body with `rename-map`
@@ -89,8 +118,8 @@ To fork a skill:
 
 1. Check that the upstream licence allows redistribution in a public
    repo.
-2. Copy the upstream files at one commit, and record that commit as the
-   pin.
+2. Copy the upstream files at one commit. Record that commit as the pin,
+   and the upstream authors, in `PROVENANCE`.
 3. Write the frontmatter from the name, trigger, and purpose that the
    workflow doc gives. A typed-only skill also sets
    `disable-model-invocation: true`.
@@ -104,6 +133,11 @@ The state compares the upstream files in the fork with the pin, after
 that the fork also edits the upstream body, and the changelog says how and
 why. `PROVENANCE` is TOML; its `patterns` key names other upstream skills
 that informed `local.md` without being copied.
+
+To update a fork, compare the pinned upstream, the new upstream and the
+fork, as section 10.2 of the workflow doc describes. Run `review-skill` on
+the update, record the new pin, and add a changelog entry. Updates are made
+by hand; no command syncs forks.
 
 A skill that the workflow doc marks Write has no upstream body. It records
 the skills that informed it in `metadata.inspired-by`.
@@ -154,10 +188,12 @@ from the workflow doc names the skills that informed it in
   other harnesses get a symlink. Skills that apply the rules, such as
   `technical-writing`, `polish` and `huh`, rely on these loaded rules and
   hold no copy.
-- A fork keeps the upstream body unchanged and puts this repo's additions
-  in `local.md`, so that most upstream updates stay simple. It records
-  its source in `PROVENANCE` and keeps the upstream LICENSE file. This
-  follows section 10.2 of the workflow doc.
+- A fork changes the upstream body only through `rename-map` and puts
+  this repo's additions in `local.md`, so that most upstream updates stay
+  simple. This follows section 10.2 of the workflow doc.
+- The repo is public, so `data-context` keeps its map of your data in
+  `skills/data-context/map/`, which `.gitignore` excludes. Schemas and
+  metric definitions never reach the public history.
 - The CLI uses the Python standard library only, so a new device needs no
   setup beyond Python 3.11+.
 - `install` never replaces a skill folder, and never writes through a
@@ -166,15 +202,3 @@ from the workflow doc names the skills that informed it in
   through a symlink would change a file outside `config.toml`.
 - `[skill_readers]` in `config.toml` lists the folders that each tool
   scans, so `doctor` can report a skill name that one tool finds twice.
-
-## Deferred
-
-| Feature                   | Add when                                               |
-|---------------------------|--------------------------------------------------------|
-| `vendor` command (the upstream sync in workflow doc 10.2) | Several upstream skills need regular updates |
-| `build` and `dist/`       | You upload skills to chat apps regularly               |
-| Profiles per device       | About 15+ skills, or a device needs a subset           |
-| Evals                     | You run the style comparison test                      |
-| Plugin manifests          | You need a managed install on a device without a clone |
-| Decision records          | Someone else contributes                               |
-| Python 3.9 support (fallback parser for the TOML that `config.toml` uses) | A device you use cannot install Python 3.11+ |

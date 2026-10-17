@@ -96,7 +96,7 @@ Grouped by the moment you need them, as in the workflow doc's quick reference. E
 | 5 | review-plan | Challenge the MVP scope | A reviewer from another model family challenges the cut (expand, hold or reduce). It proposes dropping PDF statements from the MVP; you keep them because most Indian banks email PDFs. | Decide the cut and the order. | MVP intents, cut and order |
 | 6 | Spike ×3 → ADRs | Spike what is expensive to reverse | Throwaway prototypes for the categoriser (rules vs small model vs LLM on 2,000 labelled transactions), PDF parsing on statements from five banks, and the data store. Cheap choices such as the chart library get provisional ADRs. | — | — |
 | 7 | to-design → review-plan | Write the architecture | Writes architecture.md: web front end, Python API, parser adapters, categoriser service, Postgres, staging and prod. Every guardrail maps to a choice. Reviewed through the ladder. | Accept the architecture. | Architecture accepted |
-| 8 | setup (stack pass) | Setup, second pass | With the stack chosen, the playbook runs setup's second pass: the CLAUDE.md commands, format and lint hooks, the verify command, the health checks behind make health, REVIEW.md standards and CI. It only adds controls, so it needs no gate. | — | — |
+| 8 | setup (stack pass) | Setup, second pass | With the stack chosen, the playbook runs setup's second pass: the AGENTS.md commands, format and lint hooks, the verify command, the health checks behind make health, REVIEW.md standards and CI. It only adds controls, so it needs no gate. | — | — |
 | 9 | to-spec → implement → ship | Build the walking skeleton | The riskiest assumption is about the categoriser, an architecture question, so the skeleton runs through the target architecture: upload one bank's CSV, parse, categorise with a single rule, store, list on a page, deploy to staging. verify-app is written alongside it. | Approve the slice spec, then merge. | Spec, merge |
 | 10 | agent-readiness check | Check the repo is agent-ready | A fresh agent session, given only the repo, states the commands, conventions and architecture and runs verify-app green. The check becomes the first eval case. Parallel work is now allowed. | — | — |
 | 11 | start × 4 | Build the MVP intents | The router takes each MVP intent in dependency order: the rest of I-0001 (more banks, PDFs) as Feature M, I-0002 as Feature L because it is model behaviour, then I-0003 and I-0004 as Feature M in parallel worktrees. | — | Each playbook's gates |
@@ -823,7 +823,7 @@ Sizing bank sync needs one number from the product warehouse: how many household
 
 **Artifacts**
 
-`agent-skills/skills/data-context/product-warehouse.md`
+`agent-skills/skills/data-context/map/product-warehouse.md`
 ```
 households: one row per household; key household_id
 events: one row per app event; household_id, event_name, ts (UTC)
@@ -1628,7 +1628,7 @@ The same run continues with code-health. It runs the repo's health checks itself
 ```
 dead code: parser/legacy_csv_reader.py, 0 callers
 README: make import-statement no longer exists
-CLAUDE.md: scripts/seed_db.py moved to tools/
+AGENTS.md: scripts/seed_db.py moved to tools/
 naming: 14 names use txn (GLOSSARY.md says avoid)
 imports: monthly_view uses sync_worker internals (layers contract)
 complexity: categoriser _match_rule is 18 (REVIEW.md flags > 10)
@@ -1659,7 +1659,7 @@ build_totals(): 60 lines but one job: left as it is
 ```
 `code-health report`
 ```
-A Fix README, CLAUDE.md and runbook
+A Fix README, AGENTS.md and runbook
 B Rename txn → transaction and bucket → category
 C Categoriser: fix the comment; repair the notebook
 D Categoriser: split, guard clauses, named threshold, inline wrapper
@@ -1695,7 +1695,7 @@ The recurring-payments change was small, but the session dragged. codify capture
 |---|---|---|---|---|---|
 | 1 | retro | Read the session | Reads this session's transcript, using writing-for-agents for how any proposed text should read. | — | — |
 | 2 | retro | Rank what slowed it down | Ranked by how much time each fix would have saved. | — | — |
-| 3 | → /start | Act on your picks | You pick 1 and 3. The fast test command goes to /start as a Feature S; the CLAUDE.md cut is checked by the agent-config evals. | Pick the fixes. | — |
+| 3 | → /start | Act on your picks | You pick 1 and 3. The fast test command goes to /start as a Feature S; the AGENTS.md cut is checked by the agent-config evals. | Pick the fixes. | — |
 
 **Artifacts**
 
@@ -1703,7 +1703,7 @@ The recurring-payments change was small, but the session dragged. codify capture
 ```
 1 Full test suite after every edit, 12 min each: add make test-fast
 2 Nine searches for where categories are defined: add a pointer
-3 Three CLAUDE.md lines change nothing: delete them
+3 Three AGENTS.md lines change nothing: delete them
 4 Read a 4 MB fixture file twice: exclude it from search
 ```
 

@@ -1,7 +1,8 @@
 # agent-toolkit: working rules
 
-This repo holds personal agent skills and one always-on style file. A small
-CLI links them into each agent harness on each device.
+This repo holds the skills of the AI-native workflow in `workflow/` and one
+always-on style file. A small CLI links them into each agent harness on
+each device.
 
 ## Skills
 
@@ -16,11 +17,11 @@ CLI links them into each agent harness on each device.
 - A fork keeps the upstream body and files unchanged, except for the
   renames in `rename-map`. Never edit an upstream licence, credits or
   supporting file. Put additions in `local.md`, and record the source,
-  authors, pin, and changes in `PROVENANCE`.
+  authors, pin, and changes in `PROVENANCE`. See README.md, "Fork a
+  skill".
 - Credit every source. A skill written from the workflow doc names the
   skills that informed it in `metadata.inspired-by`, and copies no text
   from them.
-  See README.md, "Fork a skill".
 - Describe actions, not harness tool names. Write "read the file", not
   "use the Read tool".
 - Every skill follows the workflow doc.
@@ -51,7 +52,7 @@ CLI links them into each agent harness on each device.
 ## Workflow design
 
 - `workflow/ai-native-sdlc.md` is the design for the skills that this repo
-  will hold. When you build one of its skills, use the name, trigger, and
+  holds. When you build or change one of its skills, use the name, trigger, and
   rules that the doc gives. If the build changes any of them, update the
   doc in the same commit.
 - Edit `workflow/ai-native-sdlc.md` and the files in `workflow/src/`. Never
@@ -61,8 +62,8 @@ CLI links them into each agent harness on each device.
 
 ## Scope
 
-- Deferred features are listed in README.md with their triggers. Do not
-  add them unless a trigger has occurred.
+- Add a skill only through the workflow doc, as README.md, "Add a skill"
+  describes.
 - Write prose in this repo according to `instructions/technical-clarity.md`,
   and use the terms in `GLOSSARY.md`.
 - Run `bin/toolkit check` before each commit.

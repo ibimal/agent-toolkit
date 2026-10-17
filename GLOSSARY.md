@@ -24,6 +24,7 @@ different.
 | fork | A skill copied from an upstream repo. Its folder adds `local.md` and `PROVENANCE` to the upstream files. | vendored skill |
 | upstream | The repo and path that a fork was copied from. | |
 | pin | The upstream commit that a fork matches. `PROVENANCE` records it. | |
+| written skill | A skill written in this repo from the workflow doc, with no upstream body. The doc's catalog gives its source as Write. | Write skill |
 | pattern | An upstream skill that informed a skill's text without being copied. `PROVENANCE` lists a fork's patterns in `patterns`; a skill written from the workflow doc lists them in `metadata.inspired-by`. | |
 | agent-startable skill | A skill that the agent can start when a task fits its description. Its description loads in every session. | |
 | typed-only skill | A skill that starts only when the user types its name. It sets `disable-model-invocation: true`. | |

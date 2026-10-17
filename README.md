@@ -74,14 +74,16 @@ then run `bin/toolkit check`.
 A fork is a skill copied from an upstream repo. Until the `vendor`
 command exists, you update a fork by hand. Its folder holds these files:
 
-- `SKILL.md`: this repo's frontmatter, one line that loads `local.md`,
-  and the upstream body, unchanged.
+- `SKILL.md`: this repo's frontmatter, a note that loads `local.md` and
+  marks the skill as changed, and the upstream body with `rename-map`
+  applied.
 - `local.md`: this repo's additions. Where they differ from the upstream
   body, they win.
-- `PROVENANCE`: the upstream repo and path, the pin, the state, and a
-  changelog of edits with reasons.
-- `LICENSE`: the upstream licence.
-- Any other upstream files that the body links to, unchanged.
+- `PROVENANCE`: the upstream repo and path, its authors, the pin, the
+  state, and a changelog of edits with reasons.
+- `LICENSE`: the upstream licence, plus the licence of any third-party
+  text the upstream skill itself includes.
+- The other upstream files, verbatim: credits, references and scripts.
 
 To fork a skill:
 
@@ -111,6 +113,23 @@ the skills that informed it in `metadata.inspired-by`.
 `workflow/` holds the design for an AI-native development workflow: its
 playbooks, the skills they use, and worked examples. It is the spec for
 the skills that this repo will hold. See `workflow/README.md`.
+
+## Licences
+
+This repo's own code and text are under the MIT licence in `LICENSE`.
+Each fork in `skills/` stays under its upstream licence, in the licence
+file in its folder, and `PROVENANCE` names its authors:
+
+| Licence | Forks |
+|---|---|
+| MIT | Forks of mattpocock/skills, pstack, cursor-team-kit, compound-engineering, and K-Dense |
+| Apache-2.0 | `explore-data`, `review-result`, `data-context`, `to-skill`, `review-skill`, `write-notebook` |
+| CC BY-SA 4.0 | `second-opinion`, `review-dependency`, each as a whole, `local.md` included |
+
+Each fork's `SKILL.md` says that it is changed, and `PROVENANCE` lists
+the changes, as Apache-2.0 and CC BY-SA 4.0 require. A skill written
+from the workflow doc names the skills that informed it in
+`metadata.inspired-by`; it copies no text from them.
 
 ## Design notes
 

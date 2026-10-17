@@ -6,8 +6,9 @@ license: MIT
 
 Read [local.md](local.md) first. It holds this repo's additions to the
 instructions below, and it wins where the two differ. The instructions
-below come from an upstream skill; `PROVENANCE` names it and lists the
-changes.
+below are adapted from an upstream skill and changed in this repo;
+`PROVENANCE` names its authors, source and licence, and lists every
+change.
 
 Reference for writing any document an agent consumes: a skill, an `AGENTS.md` / `CLAUDE.md`, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable, since the agent takes the same _process_ every run rather than producing the same output.
 

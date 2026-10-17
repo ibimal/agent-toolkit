@@ -2,7 +2,7 @@
 name: code-health
 description: "Checks existing code for hygiene and drift without changing it: runs the repo's health checks itself (no CI needed), judges the areas the coverage plan picks against REVIEW.md, checks docs, specs, comments, names, notebooks and metrics for drift from the code, and returns findings in small batches. Use when code, docs or names feel out of date, when the merge hook or a milestone review starts it (after architecture-health), or for /code-health <area> or full."
 metadata:
-  inspired-by: https://github.com/garrytan/gstack (test-audit, document-release), https://github.com/cursor/plugins (no-comments) and https://github.com/trailofbits/skills (spec-to-code-compliance)
+  inspired-by: https://github.com/garrytan/gstack (test-audit, document-release, deslop-shared-libs), https://github.com/cursor/plugins (no-comments) and https://github.com/trailofbits/skills (spec-to-code-compliance)
 ---
 
 # Code health

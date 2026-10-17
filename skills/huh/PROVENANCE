@@ -3,8 +3,9 @@ repo = "https://github.com/EveryInc/compound-engineering-plugin"
 path = "skills/wtf"
 pin = "fac349c0c31a543d497fd4825af9b44bdb7e7dfe"
 license = "MIT"
+authors = "Every"
 state = "Pristine"  # Pristine, Behind, Ahead, Diverged, or Owned
-patterns = ["mattpocock wait-what (https://github.com/mattpocock/skills)", "pstack ketchup (https://github.com/cursor/plugins)"]
+patterns = ["mattpocock wait-what (https://github.com/mattpocock/skills)", "pstack ketchup (https://github.com/cursor/plugins)", "pstack bro (https://github.com/cursor/plugins)"]
 
 [[changelog]]
 date = "2026-10-16"
@@ -15,3 +16,8 @@ reason = "Workflow doc, sections 4, 6 and 10.1."
 date = "2026-10-16"
 change = "local.md: restating the last reply keeps every fact at the same length, carried over from plain-restate, which huh replaces."
 reason = "Workflow doc, section 10.1: huh replaces wait-what; one skill per job (10.3)."
+
+[[changelog]]
+date = "2026-10-17"
+change = "Recorded the upstream authors and fuller pattern credits; the load line now says the skill is changed here."
+reason = "Licence compliance: MIT and Apache-2.0 keep the notices; Apache-2.0 4(b) and CC BY-SA 4.0 require changes to be marked."

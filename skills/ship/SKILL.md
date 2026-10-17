@@ -2,12 +2,15 @@
 name: ship
 description: "Ships a change: writes the PR body (intent, summary, evidence, reviewer rung, merge danger), hands failing checks to fix-ci, holds the merge and deploy gates, runs the post-deploy check, and after merge archives the change and updates data-context. Use when a playbook reaches ship or the user asks to open a PR or ship."
 license: MIT
+metadata:
+  credits: "The Summary section comes from show-me by Dex Horthy (HumanLayer), MIT. See CREDITS.md and LICENSE-show-me."
 ---
 
 Read [local.md](local.md) first. It holds this repo's additions to the
 instructions below, and it wins where the two differ. The instructions
-below come from an upstream skill; `PROVENANCE` names it and lists the
-changes.
+below are adapted from an upstream skill and changed in this repo;
+`PROVENANCE` names its authors, source and licence, and lists every
+change.
 
 Use this template for writing the PR body:
 

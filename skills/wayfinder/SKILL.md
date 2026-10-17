@@ -7,8 +7,9 @@ disable-model-invocation: true
 
 Read [local.md](local.md) first. It holds this repo's additions to the
 instructions below, and it wins where the two differ. The instructions
-below come from an upstream skill; `PROVENANCE` names it and lists the
-changes.
+below are adapted from an upstream skill and changed in this repo;
+`PROVENANCE` names its authors, source and licence, and lists every
+change.
 
 A loose idea has arrived, too big for one agent session, and wrapped in fog: the way from here to the **destination** isn't visible yet. Wayfinding is about finding that way, not charging at the destination. This skill charts the way as a **shared map** on the repo's issue tracker, then works its **decision tickets** (questions whose resolution is a decision, not slices of a build to execute) one at a time until the route is clear.
 

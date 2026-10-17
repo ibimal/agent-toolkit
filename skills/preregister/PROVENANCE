@@ -3,6 +3,8 @@ repo = "https://github.com/K-Dense-AI/claude-scientific-skills"
 path = "skills/experimental-design"
 pin = "a1043ef544e3a100c28e70a736b6cf32554d0677"
 license = "MIT"
+authors = "K-Dense Inc."
+upstream_version = "1.5"
 state = "Pristine"  # Pristine, Behind, Ahead, Diverged, or Owned
 patterns = ["K-Dense statistical-power (https://github.com/K-Dense-AI/claude-scientific-skills)", "gstack eval-plan (https://github.com/garrytan/gstack)", "Causal Inference: The Mixtape (https://mixtape.scunning.com/)"]
 
@@ -10,3 +12,8 @@ patterns = ["K-Dense statistical-power (https://github.com/K-Dense-AI/claude-sci
 date = "2026-10-16"
 change = "Forked as preregister. New description (agent-startable), the line that loads local.md, and a local.md with the workflow doc's rules for this skill."
 reason = "Workflow doc, sections 4, 6 and 10.1."
+
+[[changelog]]
+date = "2026-10-17"
+change = "Recorded the upstream authors and fuller pattern credits; the load line now says the skill is changed here."
+reason = "Licence compliance: MIT and Apache-2.0 keep the notices; Apache-2.0 4(b) and CC BY-SA 4.0 require changes to be marked."

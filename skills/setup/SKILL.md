@@ -1,6 +1,8 @@
 ---
 name: setup
 description: "Sets a repo up for the AI-native workflow: the docs layout, the tracker link, the reachable models and reviewer ladder in docs/sdlc/config, the destructive-command guard, and AGENTS.md, CLAUDE.md and REVIEW.md stubs; once the stack is known, commands, format and lint hooks, the verify command, health checks, REVIEW.md standards and CI. Use when /start finds no docs/sdlc/config, at New application steps 1 and 5, on a device or harness the config does not list, or when the user asks to set up a repo."
+metadata:
+  inspired-by: https://github.com/mattpocock/skills (setup), https://github.com/cursor/plugins (pstack setup, verification skills), https://github.com/astral-sh/claude-code-plugins (uv, ruff, ty), https://github.com/trailofbits/skills (modern-python), https://github.com/wshobson/agents (blocking --no-verify)
 ---
 
 # Setup

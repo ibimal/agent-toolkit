@@ -7,8 +7,9 @@ disable-model-invocation: true
 
 Read [local.md](local.md) first. It holds this repo's additions to the
 instructions below, and it wins where the two differ. The instructions
-below come from an upstream skill; `PROVENANCE` names it and lists the
-changes.
+below are adapted from an upstream skill and changed in this repo;
+`PROVENANCE` names its authors, source and licence, and lists every
+change.
 
 Turn something the user can't answer alone into a **questionnaire**: a Markdown document they hand to one person to fill in async, or fill out together over a meeting. The recipient holds knowledge the user lacks; the questionnaire pulls it out of them.
 

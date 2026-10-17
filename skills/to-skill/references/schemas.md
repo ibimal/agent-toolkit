@@ -1,6 +1,6 @@
 # JSON Schemas
 
-This document defines the JSON schemas used by to-skill.
+This document defines the JSON schemas used by skill-creator.
 
 ---
 

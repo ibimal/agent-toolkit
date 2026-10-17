@@ -1,6 +1,7 @@
-# Upstream skill names that this repo changes. A future upstream sync
-# applies this map to both upstream versions before it compares them, so
-# a rename never shows up as a change. See workflow/ai-native-sdlc.md,
+# Upstream skill names that this repo changes. The map applies to each
+# fork's SKILL.md body only; supporting files, credits and licences stay
+# verbatim. A future upstream sync applies it to both upstream versions
+# before it compares them, so a rename never shows up as a change. See workflow/ai-native-sdlc.md,
 # sections 10.2 and 10.3.
 #
 # One rename per line: upstream repo, upstream name, name in this repo.

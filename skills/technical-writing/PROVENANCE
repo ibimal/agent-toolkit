@@ -3,6 +3,7 @@ repo = "https://github.com/cursor/plugins"
 path = "pstack/skills/technical-writing"
 pin = "2f8377461fd533f5af782e1fd643783b1067b847"
 license = "MIT"
+authors = "Lauren Tan"
 state = "Pristine"  # Pristine, Behind, Ahead, Diverged, or Owned
 
 [[changelog]]
@@ -14,3 +15,8 @@ reason = "Workflow doc, sections 4, 6 and 10.1."
 date = "2026-10-16"
 change = "local.md: review mode judges terms and depth against the reader, and edits list their changes, carried over from technical-writing-review, which technical-writing replaces."
 reason = "Workflow doc, section 10.1: huh replaces wait-what; one skill per job (10.3)."
+
+[[changelog]]
+date = "2026-10-17"
+change = "Recorded the upstream authors and fuller pattern credits; the load line now says the skill is changed here."
+reason = "Licence compliance: MIT and Apache-2.0 keep the notices; Apache-2.0 4(b) and CC BY-SA 4.0 require changes to be marked."

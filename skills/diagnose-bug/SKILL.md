@@ -6,8 +6,9 @@ license: MIT
 
 Read [local.md](local.md) first. It holds this repo's additions to the
 instructions below, and it wins where the two differ. The instructions
-below come from an upstream skill; `PROVENANCE` names it and lists the
-changes.
+below are adapted from an upstream skill and changed in this repo;
+`PROVENANCE` names its authors, source and licence, and lists every
+change.
 
 # Diagnosing Bugs
 

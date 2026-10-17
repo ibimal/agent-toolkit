@@ -13,8 +13,13 @@ CLI links them into each agent harness on each device.
   exception: a skill that the workflow doc lists as typed only (section
   2.3) also sets `disable-model-invocation: true`.
 - Keep SKILL.md under 500 lines. Keep file references one level deep.
-- A fork keeps the upstream body and files unchanged. Put additions in
-  `local.md`, and record the source, pin, and changes in `PROVENANCE`.
+- A fork keeps the upstream body and files unchanged, except for the
+  renames in `rename-map`. Never edit an upstream licence, credits or
+  supporting file. Put additions in `local.md`, and record the source,
+  authors, pin, and changes in `PROVENANCE`.
+- Credit every source. A skill written from the workflow doc names the
+  skills that informed it in `metadata.inspired-by`, and copies no text
+  from them.
   See README.md, "Fork a skill".
 - Describe actions, not harness tool names. Write "read the file", not
   "use the Read tool".

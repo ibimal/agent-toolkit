@@ -40,9 +40,12 @@ jobs:
         run: |
           mkdir site
           cp workflow/ai-native-sdlc.md site/index.md
-          cp workflow/examples.md workflow/README.md workflow/walkthroughs.html site/
+          cp workflow/examples.md workflow/walkthroughs.html site/
           sed -i 's|href="ai-native-sdlc.md"|href="./"|' site/walkthroughs.html
-          sed -i 's|(ai-native-sdlc.md)|(index.md)|g' site/README.md site/examples.md
+          sed -i 's|(ai-native-sdlc.md)|(index.md)|g' site/examples.md
+          # workflow/README.md is about maintaining these files; GitHub Pages
+          # does not publish READMEs, so the doc links to it on GitHub.
+          sed -i "s|(README.md)|(https://github.com/$GITHUB_REPOSITORY/blob/main/workflow/README.md)|" site/index.md
           printf 'title: AI-native SDLC workflow\ndescription: How development work runs with AI agents, skills and coding assistants.\n' > site/_config.yml
       - uses: actions/configure-pages@v6
       - uses: actions/jekyll-build-pages@v1

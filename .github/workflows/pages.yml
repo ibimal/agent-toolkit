@@ -1,0 +1,62 @@
+name: pages
+
+# Publishes the workflow design as a GitHub Pages site: the workflow doc
+# is the homepage, with the worked examples and the walkthroughs beside it.
+# Pages must use "GitHub Actions" as its source (Settings > Pages).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "workflow/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push waits instead of cancelling a deploy
+# in progress.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Regenerate the examples and walkthroughs
+        run: python3 workflow/src/build.py
+      - name: Assemble the site
+        # The doc becomes index.md, so it is the homepage. Jekyll renders the
+        # Markdown and rewrites its .md links to .html. The walkthrough page
+        # is static HTML, so its link to the doc is rewritten here.
+        run: |
+          mkdir site
+          cp workflow/ai-native-sdlc.md site/index.md
+          cp workflow/examples.md workflow/README.md workflow/walkthroughs.html site/
+          sed -i 's|href="ai-native-sdlc.md"|href="./"|' site/walkthroughs.html
+          sed -i 's|(ai-native-sdlc.md)|(index.md)|g' site/README.md site/examples.md
+          printf 'title: AI-native SDLC workflow\ndescription: How development work runs with AI agents, skills and coding assistants.\n' > site/_config.yml
+      - uses: actions/configure-pages@v6
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./site
+          destination: ./_site
+      - uses: actions/upload-pages-artifact@v5
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

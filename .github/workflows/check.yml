@@ -22,3 +22,9 @@ jobs:
         run: bin/toolkit check
       - name: Run tests
         run: python3 -m unittest discover -s tests
+      - name: Check that the generated workflow files are current
+        # examples.md and walkthroughs.html are generated from workflow/src/.
+        # If this fails, run python3 workflow/src/build.py and commit.
+        run: |
+          python3 workflow/src/build.py
+          git diff --exit-code -- workflow/examples.md workflow/walkthroughs.html

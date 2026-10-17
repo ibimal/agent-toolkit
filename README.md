@@ -22,7 +22,7 @@ agent-toolkit/
 ├── workflow/                  # AI-native SDLC design: doc, examples, walkthroughs
 │   ├── ai-native-sdlc.md      # the workflow doc
 │   └── src/                   # example data and the generator
-└── .github/workflows/check.yml
+└── .github/workflows/         # check.yml (CI), pages.yml (the workflow site)
 ```
 
 ## Commands
@@ -112,7 +112,13 @@ the skills that informed it in `metadata.inspired-by`.
 
 `workflow/` holds the design for an AI-native development workflow: its
 playbooks, the skills they use, and worked examples. It is the spec for
-the skills that this repo will hold. See `workflow/README.md`.
+the skills that this repo holds. See `workflow/README.md`.
+
+The design is published as a site at
+<https://ibimal.github.io/agent-toolkit/>: the workflow doc is the
+homepage, with the worked examples and the walkthroughs beside it.
+`.github/workflows/pages.yml` rebuilds and deploys it on each push to
+`main` that changes `workflow/`.
 
 ## Licences
 

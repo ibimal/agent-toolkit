@@ -15,7 +15,14 @@ its spec.
 | `src/build.py` | Generates `examples.md` and `walkthroughs.html` | Yes |
 | `src/check_doc.py` | Checks the workflow doc for consistency | Yes |
 | `examples.md` | The worked examples, as text | No, generated |
-| `walkthroughs.html` | The worked examples as step-by-step walkthroughs. Open it in a browser. | No, generated |
+| `walkthroughs.html` | The worked examples as step-by-step walkthroughs. Open it in a browser, or on the site. | No, generated |
+
+## The site
+
+The design is published at <https://ibimal.github.io/agent-toolkit/>.
+`.github/workflows/pages.yml` regenerates the files, makes the workflow
+doc the homepage, and deploys on each push to `main` that changes
+`workflow/`. CI fails a change whose generated files are out of date.
 
 ## After a change
 

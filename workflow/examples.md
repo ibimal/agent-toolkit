@@ -53,7 +53,7 @@ Grouped by the moment you need them, as in the workflow doc's quick reference. E
 | Understand | `data-context` | The agent: before its first query, then whenever new facts about the data appear | The agent queries data that has no map yet, or any work brings new facts about the data. | Map the warehouse, then keep it current |
 | Understand | `diagnose-metric` | You type it; Incidents and measure steps start it too | A metric moved and you need to know why before anyone acts on it. | Engagement fell 7 points in March |
 | Understand | `write-notebook` | The agent, whenever it writes or touches a notebook | The agent writes a notebook, or touches an old Jupyter one. | The broken evaluation notebook |
-| Understand | `research` | You type it; the agent and wayfinder start it too | A decision waits on a fact you'd have to read up on. | The aggregator's sync limits |
+| Understand | `look-up` | You type it; the agent and wayfinder start it too | A decision waits on a fact you'd have to read up on. | The aggregator's sync limits |
 | Understand | `learn` | You type it, in a learning folder | You want to learn a topic properly, over several sessions. | Learning Postgres row-level security |
 | Decide | `brainstorm` | You type it | You need ideas, not yet an idea: a new project, a feature area, an improvement plan. | More households back for a second month |
 | Decide | `wayfinder` | You type it; Feature L suggested it | Open decisions need more than one session before a spec or design can be written. | Bank sync's open decisions |
@@ -377,10 +377,10 @@ ADR 0011: aggregator API, not screen scraping
 
 | # | Skills | Step | What happens | You | Gate |
 |---|---|---|---|---|---|
-| 1 | diagnose | Reproduce and narrow down | Reproduces on the same surface: uploads a statement with a payment at 23:10 IST on 31 Jan and opens January; it is missing. Minimises to the month-bucketing code and instruments it. | — | — |
+| 1 | diagnose-bug | Reproduce and narrow down | Reproduces on the same surface: uploads a statement with a payment at 23:10 IST on 31 Jan and opens January; it is missing. Minimises to the month-bucketing code and instruments it. | — | — |
 | 2 | tdd | Write the failing test | A regression test for the 23:10 case fails for the expected reason, plus a property test: every transaction lands in exactly one month, in any timezone. A hook now blocks edits to the regression test during the fix. | — | — |
 | 3 | fix | Fix | The parser stores times with the statement's timezone, using the standard library's zoneinfo. The agent's first attempt added a timezone package; review-dependency turned it down (see its example). | — | — |
-| 4 | diagnose | Find other instances | Searches for the same cause elsewhere: the recurring-payment detector also builds naive datetimes, in two places. Both are fixed in the same change, each with a test. | — | — |
+| 4 | diagnose-bug | Find other instances | Searches for the same cause elsewhere: the recurring-payment detector also builds naive datetimes, in two places. Both are fixed in the same change, each with a test. | — | — |
 | 5 | verify-app | Verify | Re-uploads the fixture: the January total is now ₹48,920, matching the bank. | — | — |
 | 6 | review-change | Review | The spec axis checks the must-not-change rule still holds. | — | — |
 | 7 | ship | Ship | PR linked to I-0003 with the failing-then-passing test as evidence. | Merge. | Merge |
@@ -500,7 +500,7 @@ Re-run from a clean start: same result; snapshot, commit and seeds recorded
 | # | Skills | Step | What happens | You | Gate |
 |---|---|---|---|---|---|
 | 1 | detection | The alert fires | A threshold rule, not a model, sees parse failures at 31% against a 2% baseline on the 1st of the month. Its hook sends the alert to /start, which is why the router ran first. Nobody is watching at 06:10, so the run loads afk and every gate waits for you. | — | — |
-| 2 | diagnose (read-only) | Diagnose without changing anything | Reads logs and failed files only. Every failure comes from Bank B, whose CSV header changed overnight. | — | — |
+| 2 | diagnose-bug (read-only) | Diagnose without changing anything | Reads logs and failed files only. Every failure comes from Bank B, whose CSV header changed overnight. | — | — |
 | 3 | → Bug fix | Small fix through Bug fix | The Bug fix playbook runs: a failing test with the new header, then Bank B's adapter accepts both. Thanks to the refactor it is one file. The 212 files are re-parsed. | Merge. | Merge |
 | 4 | → agent-raised intent | Raise the bigger problem | Banks change formats without notice. The agent raises I-0011 Detect format changes before users hit them, status proposed. The router will route it when it is picked up. | — | — |
 | 5 | eval case | Keep the lesson | The new header joins the fixtures and the eval suite. | — | — |
@@ -934,13 +934,13 @@ Diff in the PR: the code, not 4 MB of JSON
 
 ---
 
-## 21. `research`: The aggregator's sync limits
+## 21. `look-up`: The aggregator's sync limits
 
 **When:** A decision waits on a fact you'd have to read up on.
 
-**Typed:** `/research how often the aggregator lets us sync each account`
+**Typed:** `/look-up how often the aggregator lets us sync each account`
 
-**How it starts:** Trigger: You type it; the agent and wayfinder start it too · When: Before choosing the daily sync schedule · Router: Not involved · Skill: research
+**How it starts:** Trigger: You type it; the agent and wayfinder start it too · When: Before choosing the daily sync schedule · Router: Not involved · Skill: look-up
 
 The sync schedule depends on the aggregator's limits. Nobody should guess them, and you don't want to stop and read the docs yourself.
 
@@ -948,9 +948,9 @@ The sync schedule depends on the aggregator's limits. Nobody should guess them, 
 
 | # | Skills | Step | What happens | You | Gate |
 |---|---|---|---|---|---|
-| 1 | research | Hand it to a background agent | You keep working while it reads. | — | — |
-| 2 | research | Read the primary sources | The aggregator's API reference and consent guide, not blog summaries. Each claim is followed back to the page that owns it. | — | — |
-| 3 | research | Write a cited note | One file, every claim with its source, and the open question it couldn't settle. | — | — |
+| 1 | look-up | Hand it to a background agent | You keep working while it reads. | — | — |
+| 2 | look-up | Read the primary sources | The aggregator's API reference and consent guide, not blog summaries. Each claim is followed back to the page that owns it. | — | — |
+| 3 | look-up | Write a cited note | One file, every claim with its source, and the open question it couldn't settle. | — | — |
 
 **Artifacts**
 
@@ -962,7 +962,7 @@ A: Consent lasts 365 days, then the user re-consents [Consent guide]
 Open: no published limit on history depth
 ```
 
-**What it shows:** research answers from the source that owns the fact and leaves a cited note, so the next decision doesn't repeat the reading.
+**What it shows:** look-up answers from the source that owns the fact and leaves a cited note, so the next decision doesn't repeat the reading.
 
 ---
 
@@ -1073,7 +1073,7 @@ In the Feature L example the open questions fitted one session. Here they don't:
 | 1 | grilling + glossary | Name the destination | Settles what the map is finding its way to before anything else, because the destination fixes the scope. | Agree the destination. | — |
 | 2 | grilling (breadth-first) | Map the frontier | Fans out across the whole problem instead of going deep on one thread. Anything not yet sharp enough to become a ticket goes into the fog; anything beyond the destination is ruled out of scope. | — | — |
 | 3 | chart the tickets | Create the decision tickets | One file per question, typed, labelled HITL (needs you) or AFK (the agent alone), and wired with blocking edges. These are decisions to make, not slices to build. | — | — |
-| 4 | research (subagent) | AFK research runs on its own | Ticket 01 is AFK, so a subagent compares three aggregators' documentation and pricing in parallel and records the answer. Charting ends the first session; nothing else is resolved in it. | — | — |
+| 4 | look-up (subagent) | AFK research runs on its own | Ticket 01 is AFK, so a subagent compares three aggregators' documentation and pricing in parallel and records the answer. Charting ends the first session; nothing else is resolved in it. | — | — |
 | 5 | /wayfinder bank-sync | Session 2: a task ticket | The frontier is ticket 02, a HITL task: it needs you. The agent hands you a checklist to sign up for the sandbox, then records where the credentials live. | Sign up, then confirm. | — |
 | 6 | /wayfinder bank-sync | Session 3: a prototype ticket | Ticket 03 is a rough consent screen to react to. You want the revoke button on the same screen, not buried in settings. That is the decision. | React to the prototype and decide. | — |
 | 7 | /wayfinder bank-sync | Session 4: a grilling ticket | Ticket 04 settles de-duplication on date, amount and bank reference. The answer clears some fog: the retry policy is now sharp enough to become ticket 06. | Answer the grilling. | — |
@@ -1765,22 +1765,22 @@ This month's sync found upstream changes to six of your forked skills, and you a
 | # | Skills | Step | What happens | You | Gate |
 |---|---|---|---|---|---|
 | 1 | review-skill | Scan the updates | A script checks each changed skill for prompt injection, risky commands and secrets; the agent judges what it flags. | — | — |
-| 2 | review-skill | Check the newcomer for overlap | Compares the debug skill's description with yours. It reproduces, isolates and fixes bugs: the same moment as diagnose. | — | — |
-| 3 | you | Decide | You agree: diagnose waits for a pinned version upstream, and the useful checklist lives on inside diagnose. | Confirm both calls. | — |
+| 2 | review-skill | Check the newcomer for overlap | Compares the debug skill's description with yours. It reproduces, isolates and fixes bugs: the same moment as diagnose-bug. | — | — |
+| 3 | you | Decide | You agree: diagnose-bug waits for a pinned version upstream, and the useful checklist lives on inside diagnose-bug. | Confirm both calls. | — |
 
 **Artifacts**
 
 `review-skill: upstream updates`
 ```
 5 updates clean: synced to their new pins
-diagnose: a new step downloads and runs a tool without pinning its version
-→ diagnose stays at its old pin; the reason goes in its PROVENANCE
+diagnose-bug: a new step downloads and runs a tool without pinning its version
+→ diagnose-bug stays at its old pin; the reason goes in its PROVENANCE
 ```
 `review-skill: Anthropic debug`
 ```
-Overlaps diagnose: same trigger, something is broken
+Overlaps diagnose-bug: same trigger, something is broken
 New in it: a 'works in staging, not in prod' checklist
-→ not adopted; the checklist moves into diagnose's local.md
+→ not adopted; the checklist moves into diagnose-bug's local.md
 ```
 
 **What it shows:** review-skill keeps your skills safe and free of duplicates: an unsafe update stays at its old pin, and a newcomer that does the same job as a skill you have is merged into it instead of added.

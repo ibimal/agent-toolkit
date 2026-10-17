@@ -3,6 +3,9 @@
 These rules come from this repo's workflow doc. They add to the upstream
 instructions in SKILL.md, and they win where the two differ.
 
+- **Fixed point.** Inside a playbook, review the change's branch against its
+  merge-base with `main`; ask for a fixed point only when the user runs this
+  skill on its own and names none.
 - **Order.** `tidy`, `verify-app` and `review-model` (when the change ships a
   model) run before this skill.
 - **Reviewer ladder.** Use the first rung available:

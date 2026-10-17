@@ -8,4 +8,4 @@ instructions in SKILL.md, and they win where the two differ.
   control), stop and ask the user for a learning folder, because lesson files
   would otherwise mix into the product's history.
 - **Sources.** Ground each lesson in primary, high-trust sources and cite
-  them. For a single fact a lesson needs, the `research` skill can find it.
+  them. For a single fact a lesson needs, the `look-up` skill can find it.

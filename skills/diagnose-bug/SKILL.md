@@ -1,5 +1,5 @@
 ---
-name: diagnose
+name: diagnose-bug
 description: "Finds why code misbehaves with a tight feedback loop: reproduce on the same surface, minimise, rank falsifiable hypotheses, instrument, fix with a regression test, then search for other instances of the same cause. Use for bugs, failures, crashes and performance regressions; read-only inside an Incident. Not for a metric that moved (use diagnose-metric)."
 license: MIT
 ---

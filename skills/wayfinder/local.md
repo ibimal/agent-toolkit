@@ -9,7 +9,7 @@ instructions in SKILL.md, and they win where the two differ.
 - **Destination.** The map usually serves a paused playbook. Its destination
   is that playbook's next writer, normally `to-spec` or `to-design`. When
   nothing is left to decide, hand back to `/start continue <change>`.
-- **Research tickets** are resolved by the `research` skill, which writes its
+- **Research tickets** are resolved by the `look-up` skill, which writes its
   note into the ticket or `docs/research/`. Do not create throwaway research
   branches.
 - **Settled terms** go to `GLOSSARY.md` through the `glossary` skill the

@@ -1,4 +1,4 @@
-# Local additions to research
+# Local additions to look-up
 
 These rules come from this repo's workflow doc. They add to the upstream
 instructions in SKILL.md, and they win where the two differ.

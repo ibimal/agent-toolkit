@@ -10,5 +10,7 @@ instructions in SKILL.md, and they win where the two differ.
 - **More than diffs.** The input can be a diff, a plan, an architecture, an
   MVP cut, or a brainstorm. For a brainstorm, ask each model for ideas from
   its own angle, not for a review.
+- **Called by another skill,** take the input, scope and focus from the
+  caller and ask nothing, so a playbook or AFK run never stops here.
 - **Report; never fix.** Show where the models agree and disagree, and
   record each provider's model so the PR body can name the rung.

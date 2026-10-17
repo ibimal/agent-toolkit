@@ -8,7 +8,7 @@ metadata:
 
 # Brainstorm
 
-Find what the user could do. `research` finds what is true; this skill finds
+Find what the user could do. `look-up` finds what is true; this skill finds
 options. Ideas for the code's own structure come from the `-health` skills,
 and ideas for how the agent works come from `retro`.
 
@@ -19,7 +19,7 @@ and ideas for how the agent works come from `retro`.
 2. **Ground.** Read what exists, so ideas build on it instead of repeating
    it: `docs/sdlc/product.md`, the backlog with its dropped intents and their
    reasons, `data-context`, past idea files in `docs/sdlc/ideas/`, and
-   `docs/solutions/`. For a new project with no repo, use `research` to check
+   `docs/solutions/`. For a new project with no repo, use `look-up` to check
    what already exists outside.
 3. **Generate** many ideas before judging any, from several angles: the
    user's problem, the data, cost, removing something, automating it, the

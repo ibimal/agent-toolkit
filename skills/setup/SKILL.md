@@ -92,6 +92,7 @@ docs/sdlc/adr/
 docs/research/<slug>.md
 docs/solutions/
 evals/                             incident, agent-config and agent-readiness cases
+evals/skills/<name>/               eval cases for each skill, from to-skill
 .scratch/<effort>/                 wayfinder map and tickets (local tracker)
 .audit/<slug>.tsv                  run trail of an AFK run
 ```

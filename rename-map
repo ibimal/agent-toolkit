@@ -9,7 +9,8 @@ mattpocock/skills                     domain-modeling                glossary
 mattpocock/skills                     teach                          learn
 mattpocock/skills                     improve-codebase-architecture  architecture-health
 mattpocock/skills                     pr                             ship
-mattpocock/skills                     diagnosing-bugs                diagnose
+mattpocock/skills                     diagnosing-bugs                diagnose-bug
+mattpocock/skills                     research                       look-up
 mattpocock/skills                     code-review                    review-change
 mattpocock/skills                     setup-matt-pocock-skills       setup
 mattpocock/skills                     grill-with-docs                grilling
@@ -20,11 +21,12 @@ cursor/plugins                        show-me-your-work              afk
 cursor/plugins                        ketchup                        huh
 cursor/plugins                        bro                            huh
 cursor/plugins                        arena                          second-opinion
+cursor/plugins                        encode-lessons-in-structure    codify
 EveryInc/compound-engineering-plugin  wtf                            huh
 EveryInc/compound-engineering-plugin  ce-noslop                      polish
 EveryInc/compound-engineering-plugin  ce-simplify-code               tidy
 EveryInc/compound-engineering-plugin  ce-explain                     how
-EveryInc/compound-engineering-plugin  ce-debug                       diagnose
+EveryInc/compound-engineering-plugin  ce-debug                       diagnose-bug
 EveryInc/compound-engineering-plugin  ce-ideate                      brainstorm
 EveryInc/compound-engineering-plugin  ce-compound                    codify
 EveryInc/compound-engineering-plugin  ce-resolve-pr-feedback         review-feedback

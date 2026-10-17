@@ -1,4 +1,4 @@
-# Local additions to diagnose
+# Local additions to diagnose-bug
 
 These rules come from this repo's workflow doc. They add to the upstream
 instructions in SKILL.md, and they win where the two differ.
@@ -8,6 +8,9 @@ instructions in SKILL.md, and they win where the two differ.
 - **bugfix.md first.** Before the fix, write `bugfix.md` in the change folder
   with the current behaviour, the expected behaviour, and the behaviour that
   must not change.
+- **Lock the regression test.** Once the failing regression test exists,
+  add its path to `docs/sdlc/locks`, so the guard blocks edits to it while
+  the fix is in progress. Remove the line once the fix is verified.
 - **Other instances.** After the fix, search the codebase for the same cause
   elsewhere: the same pattern, the same misuse, the same wrong assumption.
   List each instance. Fix it in the same change when it is small; otherwise

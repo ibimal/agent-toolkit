@@ -45,7 +45,7 @@ You type 23 skills, but three cover most days: `/start` for any piece of work, `
 | | `/why` | Why code is the way it is: the answer is in the history (commits, PRs, intents, ADRs) | Weekly |
 | | `/explore-data` | What a dataset holds before anyone uses it: the answer is in the data | Weekly in data work |
 | | `/diagnose-metric` | Why a metric moved: the answer is in the data, once the data itself is ruled out | Weekly in data work |
-| | `/research` | A fact from outside the repo: docs, APIs, specs | Weekly |
+| | `/look-up` | A fact from outside the repo: docs, APIs, specs | Weekly |
 | | `/learn` | A topic you want to master over several sessions | Now and then |
 | Decide | `/brainstorm` | You need ideas, not yet an idea: a new project, a feature area, an improvement plan | Weekly |
 | | `/wayfinder` | Open decisions need more than one session | Now and then |
@@ -65,8 +65,8 @@ You type 23 skills, but three cover most days: `/start` for any piece of work, `
 | Moment | Pick by |
 |---|---|
 | Stay on track | You don't follow the agent → `huh`. The agent may not follow you → `readback`. You'll pick the work up in a later session → `handoff`. The work should carry on without you → `afk`. `/huh` catches you up on this session; `/start` on its own shows all your work |
-| Understand | Where the answer lives: the code → `how`; its history → `why`; a dataset → `explore-data`; a number that moved → `diagnose-metric`; outside the repo → `research`; a whole topic → `learn` |
-| Decide | No idea yet → `brainstorm`. Is an idea worth it → `size-impact`. How to test it → `preregister`. Too many open decisions for one session → `wayfinder`. Once you have an idea, `/start` grills it into shape. `brainstorm` finds what you could do; `research` finds what is true |
+| Understand | Where the answer lives: the code → `how`; its history → `why`; a dataset → `explore-data`; a number that moved → `diagnose-metric`; outside the repo → `look-up`; a whole topic → `learn` |
+| Decide | No idea yet → `brainstorm`. Is an idea worth it → `size-impact`. How to test it → `preregister`. Too many open decisions for one session → `wayfinder`. Once you have an idea, `/start` grills it into shape. `brainstorm` finds what you could do; `look-up` finds what is true |
 | Share | A message you'll send as yourself → `polish`. A document people will read → `technical-writing`. A question only someone else can answer → `to-questionnaire` |
 | Improve | The code's structure → `architecture-health`. Its hygiene and drift → `code-health`. How a session went → `retro`. A workflow you keep repeating → `to-skill` |
 
@@ -77,7 +77,7 @@ Playbook writers   to-product · to-backlog · to-intent · to-spec · to-design
 Playbook steps     setup · review-plan · implement · ship · release-readiness · codify
 Agent helpers
   Align            grilling · glossary · codebase-design · prototype
-  Build            tdd · diagnose · tidy · fix-ci
+  Build            tdd · diagnose-bug · tidy · fix-ci
   Prove            verify-app · review-change · review-feedback · blast-radius · review-result · review-dependency · review-skill · review-model
   Write            writing-for-agents · unslop
   Data             data-context · write-notebook · make-chart
@@ -99,7 +99,7 @@ You can type any of these yourself, for example to redo a step, but you never ne
   - `diagnose-metric`, inside an Incident for metric drift, or when a measured success metric misses or moves unexpectedly;
   - `size-impact`, at milestone planning and when intents compete for a cut (4.1); for an idea whose value is unclear, `/start` suggests it and you type it;
   - `second-opinion`, inside `review-change`, `review-plan` and `brainstorm`;
-  - `research`, from a `wayfinder` ticket or when a decision needs an outside fact.
+  - `look-up`, from a `wayfinder` ticket or when a decision needs an outside fact.
 - **Hooks:** the merge hook starts `architecture-health`, then `code-health`, once enough changes have merged (4.3); an alert hook sends alerts to `/start`. Every run a hook or scheduled task starts loads `afk`, and so does `/start` when you say you are stepping away, so a run nobody watches never depends on the agent noticing.
 
 ---
@@ -146,10 +146,10 @@ A playbook is a fixed sequence of skills. `start` copies its steps into the task
 | Feature S | implement (tdd where a seam exists) → tidy → verify-app → review-change → ship → codify if there is a lesson | Merge | PR body with one-line intent and evidence |
 | Feature M | grilling (intent) → to-intent → to-spec → grilling (spec) → to-tickets → implement → tidy → verify-app → review-change → ship → codify → measure the success metric (review-result) | Intent, spec, merge | Intent, `spec.md`, `plan.md`, PR |
 | Feature L | grilling (intent) → to-intent → to-spec → grilling (spec) → prototype (open questions) → to-design (with a threat model when the change crosses a trust boundary) → to-tickets → review-plan → implement in parallel worktrees → tidy → verify-app → review-change → ship (staged) → codify → measure the success metric (review-result) | Intent, spec, design + plan, merge, prod | Full chain; one intent may span several changes; a `/wayfinder` map when open decisions span sessions (4.2) |
-| Bug fix | diagnose (reproduce on the same surface, minimise, hypothesise, instrument) → failing regression test → fix → find other instances of the same cause → verify-app → review-change → ship → codify | Merge | `bugfix.md`, regression test |
+| Bug fix | diagnose-bug (reproduce on the same surface, minimise, hypothesise, instrument) → failing regression test → fix → find other instances of the same cause → verify-app → review-change → ship → codify | Merge | `bugfix.md`, regression test |
 | Refactor | blast-radius → to-tickets (behaviour-preserving steps; migrate callers, then delete the old API) → implement → verify-app (behaviour unchanged) → review-change → ship | Merge | `plan.md` |
 | Spike | grilling (frame the question; agree the bar) → explore-data (when data is involved) → preregister (when the answer is a number) → prototype (a throwaway marimo notebook through write-notebook, or a branch) → review-result → findings or ADR → decide: stop, share the findings, or re-enter as M or L | The bar, the decision | `findings.md` or ADR, plus `profile.md` and `preregistration.md` when used; nothing ships |
-| Incident | deterministic detection, whose hook sends the alert to start → diagnose (read-only), or diagnose-metric when a metric drifted → small fix via Bug fix, or an agent-raised intent | As routed | Incident note, new eval case |
+| Incident | deterministic detection, whose hook sends the alert to start → diagnose-bug (read-only), or diagnose-metric when a metric drifted → small fix via Bug fix, or an agent-raised intent | As routed | Incident note, new eval case |
 
 - `implement` works per slice: tdd at the agreed seams → verify the slice → commit.
 - **Every grilling runs `glossary` alongside it**, so a term settled in conversation lands in `GLOSSARY.md` at once. Every playbook reads the glossary; the table below says where each one changes it (lifecycle in 6.5).
@@ -215,7 +215,7 @@ These are not routes. The router never picks them; they start the way the table 
 | `afk` | You type `/afk` or say you are stepping away; `/start`, hooks and scheduled tasks load it for every run nobody watches | Nobody will watch the run | A readiness check, work that holds every human gate, and a run trail: one row per default picked and gate held, with evidence, audited against the transcript, reviewed by another model family, and topped by a hand-back | You, when you return: the hand-back lists what finished, what waits at which gate, and which rows to check first |
 
 **Rules:**
-- **`wayfinder` plans; it doesn't build.** It works one ticket per session, except AFK research tickets, which `research` resolves in parallel. The map is done when nothing is left to decide before the playbook can continue.
+- **`wayfinder` plans; it doesn't build.** It works one ticket per session, except AFK research tickets, which `look-up` resolves in parallel. The map is done when nothing is left to decide before the playbook can continue.
 - **Every `wayfinder` ticket is HITL or AFK.** HITL tickets (grilling, prototype) are worked with you and resolve only in a live exchange; the agent never answers its own questions. AFK tickets (research) are driven by the agent alone. A task ticket is AFK when the agent can do it, otherwise HITL with a checklist for you.
 - **A handoff never copies.** It points at the spec, plan, commits and ADRs by path and redacts secrets. It is deleted once the change merges.
 - **`afk` starts with readiness.** It runs only when CI, deploy, `verify-app` and the destructive-command guard exist (principle 12); otherwise it reports what is missing and stops.
@@ -323,7 +323,7 @@ Change since an area's last review is counted from the commit the ledger recorde
 
 **Understand**
 
-- **Understand skills never change code.** `how` explains the code with the `codebase-design` vocabulary. `why` follows the history (commits, PRs, change folders, intents, ADRs, run trails) and keeps what is known apart from what is inferred. `research` reads primary sources outside the repo (official docs, source code, specs, first-party APIs, never a write-up of them) and writes a cited note to `docs/research/`, or into the `wayfinder` ticket that asked. `learn` runs in its own folder, never inside a product repo.
+- **Understand skills never change code.** `how` explains the code with the `codebase-design` vocabulary. `why` follows the history (commits, PRs, change folders, intents, ADRs, run trails) and keeps what is known apart from what is inferred. `look-up` reads primary sources outside the repo (official docs, source code, specs, first-party APIs, never a write-up of them) and writes a cited note to `docs/research/`, or into the `wayfinder` ticket that asked. `learn` runs in its own folder, never inside a product repo.
 - **`explore-data` profiles before anyone analyses or builds:** shape, types, nulls, ranges, distributions, duplicates and quality issues, plus the questions worth asking next. Large local files go through DuckDB. Columns holding personal data are flagged and their values never printed; the profile shows only counts and patterns for them. What it learns about grain, keys and traps goes into `data-context`. When it serves a change, the profile is saved as `profile.md` in the change folder.
 - **`diagnose-metric` rules out the data before the world.** In order:
   1. the data: pipeline runs, late or missing rows, and changes to logging or to the definition in `data-context`;
@@ -331,13 +331,13 @@ Change since an area's last review is counted from the commit the ledger recorde
   3. hypotheses, ranked and each tested against data;
   4. `review-result` on the conclusion.
 
-  It ends with the drivers, each with its share of the move, written as a readout. The readout goes where the question came from: the incident note for an alert, a note on the intent whose metric moved, or the conversation when you simply asked. A data or code fault goes to `/start` as a Bug fix, and a trap it uncovered goes into `data-context`. It differs from `diagnose`, which finds why code misbehaves, and from `why`, which traces how code came to be.
+  It ends with the drivers, each with its share of the move, written as a readout. The readout goes where the question came from: the incident note for an alert, a note on the intent whose metric moved, or the conversation when you simply asked. A data or code fault goes to `/start` as a Bug fix, and a trap it uncovered goes into `data-context`. It differs from `diagnose-bug`, which finds why code misbehaves, and from `why`, which traces how code came to be.
 
 **Decide**
 
 - **`brainstorm` widens before anything narrows.** You give it a goal, a problem or an area (`/brainstorm how to get more households to upload a second month`), then:
   1. frames it: the goal, what is off the table, and how ideas will be judged;
-  2. grounds it in what exists, so ideas build on it instead of repeating it: the product brief, the backlog with its dropped intents and their reasons, `data-context`, past idea files and `docs/solutions/`; for a new project with no repo yet, `research` checks what already exists outside;
+  2. grounds it in what exists, so ideas build on it instead of repeating it: the product brief, the backlog with its dropped intents and their reasons, `data-context`, past idea files and `docs/solutions/`; for a new project with no repo yet, `look-up` checks what already exists outside;
   3. generates many ideas from several angles before judging any (the user's problem, the data, cost, removing something, automating it, the bold version, the contrarian one, and doing nothing), with `second-opinion` adding ideas from another model family, because different models miss different things; you add yours;
   4. critiques every idea: each is kept or cut with a reason, such as already tried, breaks a guardrail, or serves no outcome;
   5. ranks the survivors against your criteria, each with its riskiest assumption, and hands each pick on: to `size-impact` (is it worth it?), a Spike (will it work?) or `/start` (a proposed intent).
@@ -396,7 +396,7 @@ Change since an area's last review is counted from the commit the ledger recorde
 
 **Built-ins**
 
-- **Built-ins in Claude Code:** `/btw` for a side question that shouldn't enter the conversation, `/recap` for a one-line summary, `/deep-research` for a broad survey across many web sources (`research` stays the tool for one fact a decision needs, from its primary source), `/autofix-pr` to watch a PR from the cloud, `/insights` across sessions, `/skill-doctor` for each skill's context cost and use. The skills above stay portable to other harnesses.
+- **Built-ins in Claude Code:** `/btw` for a side question that shouldn't enter the conversation, `/recap` for a one-line summary, `/deep-research` for a broad survey across many web sources (`look-up` stays the tool for one fact a decision needs, from its primary source), `/autofix-pr` to watch a PR from the cloud, `/insights` across sessions, `/skill-doctor` for each skill's context cost and use. The skills above stay portable to other harnesses.
 
 ---
 
@@ -623,7 +623,7 @@ It is never finished. The map starts small and keeps itself current as the work 
 | `why` | You | Why code is the way it is, traced through commits, PRs, change folders, intents, ADRs and run trails; known kept apart from inferred | Fork: pstack `why` (same overlay) |
 | `explore-data` | You; the agent when a new dataset arrives | Profile a table or file before anyone analyses or builds on it; DuckDB for large local files; personal-data columns flagged, never printed; `profile.md` in the change folder | Fork: Anthropic data plugin `explore-data` (pattern: DuckDB `read-file`, `query`) |
 | `diagnose-metric` | You; the agent in an Incident for metric drift and when a measured success metric misses or moves unexpectedly | Find why a metric moved: rule out the data, decompose into mix and rate, segments and calendar, test each hypothesis, and rank the drivers by their share of the move; verdict through `review-result` | Write (patterns: Anthropic `analyze`, `variance-analysis`, `metrics-review`) |
-| `research` | You; the agent for `wayfinder` research tickets or an outside fact a decision needs | A background agent answers a question from primary sources and writes a cited note | Fork: mattpocock `research` |
+| `look-up` | You; the agent for `wayfinder` research tickets or an outside fact a decision needs | A background agent answers a question from primary sources and writes a cited note | Fork: mattpocock `research` |
 | `learn` | You, in a learning folder | Learn a topic over several sessions in a separate learning workspace | Fork: mattpocock `teach` |
 | `brainstorm` | You | Widen before narrowing: frame the goal, ground it in the brief, backlog, data and past ideas, generate many ideas from several angles (with `second-opinion` for another family's), critique every one, and rank a shortlist with riskiest assumptions; hands picks to `size-impact`, a Spike or `/start`; never plans or code | Write (patterns: compound `ce-ideate`, Anthropic `product-brainstorming`, K-Dense `scientific-brainstorming`) |
 | `wayfinder` | You; Feature L and New application suggest it | Chart work too foggy for one session as a map of decision tickets, then work one ticket per session | Fork: mattpocock `wayfinder` |
@@ -659,7 +659,7 @@ It is never finished. The map starts small and keeps itself current as the work 
 | `codebase-design` | Agent | Shared vocabulary for deep modules, seams and interfaces; used by `architecture-health`, `to-design` and `review-change` | Fork: mattpocock `codebase-design` |
 | `prototype` | Agent | Answer a design question by experiment | Fork: mattpocock `prototype` |
 | `tdd` | Agent | Red-green-refactor at agreed seams; fixture and property-based tests for data code; schema and data-quality tests at pipeline boundaries | Fork: mattpocock `tdd` (pattern: Trail of Bits `property-based-testing`) |
-| `diagnose` | Agent | Reproduce → minimise → hypothesise → instrument → fix → regression test → find other instances of the same cause | Fork: mattpocock `diagnosing-bugs` (pattern: Trail of Bits `variant-analysis`) |
+| `diagnose-bug` | Agent | Reproduce → minimise → hypothesise → instrument → fix → regression test → find other instances of the same cause | Fork: mattpocock `diagnosing-bugs` (pattern: Trail of Bits `variant-analysis`) |
 | `tidy` | Agent | Per-change cleanup against `REVIEW.md`: delete before adding, remove needless code and comments, clearer names | Fork: compound `ce-simplify-code` |
 | `fix-ci` | Agent when a check fails, `ship`, or you | Read the failing check, reproduce, fix the cause, push, re-check; at most three attempts; never skips a check | Fork: cursor-team-kit `fix-ci` (pattern: `loop-on-ci`) |
 | `verify-app` | Agent | Prove this app or pipeline works end to end | Write per repo (pattern: pstack verification skills) |
@@ -678,7 +678,7 @@ It is never finished. The map starts small and keeps itself current as the work 
 
 **Adoption order:**
 - **Day one:** `setup`, `grilling`, `to-spec`, `implement` with `tdd`, `verify-app`, `review-change`, `huh` and `polish`, plus a short `CLAUDE.md`, one check command, format and lint hooks, and the guard.
-- **Weeks two to four:** `start`, `ship`, `codify`, `to-intent`, `to-tickets`, `diagnose`, `research`, `review-result`, `second-opinion` and `review-dependency`; with data work, `data-context`, `explore-data`, `write-notebook`, `make-chart`, `diagnose-metric` and `preregister`; with planning, `brainstorm` and `size-impact`.
+- **Weeks two to four:** `start`, `ship`, `codify`, `to-intent`, `to-tickets`, `diagnose-bug`, `look-up`, `review-result`, `second-opinion` and `review-dependency`; with data work, `data-context`, `explore-data`, `write-notebook`, `make-chart`, `diagnose-metric` and `preregister`; with planning, `brainstorm` and `size-impact`.
 - **When the need appears:** the rest, and `review-model` with the first model you ship. Add a skill the second time you feel the problem it solves; a typed skill costs nothing until you use it.
 - **A new application** also needs `to-product`, `to-backlog`, `to-design`, `review-plan`, `size-impact` and `release-readiness`.
 
@@ -695,7 +695,7 @@ It is never finished. The map starts small and keeps itself current as the work 
 - **States:** Pristine (matches pin) · Behind (upstream moved) · Ahead (you edited) · Diverged (both) · Owned (detached).
 - **Keep edits additive** in `local.md` so most syncs are simple updates. Generic improvements go upstream as PRs.
 - **`review-skill` gates every adoption and sync.** An upstream update that fails stays at the old pin; a new skill that overlaps one you have is rejected or merged into it.
-- **A fork brings its dependencies.** Before adopting a fork, list every skill its body calls and add each one, renamed through the map: `wayfinder` needs `research`, `prototype`, `grilling` and `glossary`; `architecture-health` needs `codebase-design`, `grilling` and `glossary`; `technical-writing` and `polish` need `unslop`; `brainstorm` needs `second-opinion` and `research`; `retro` and `to-skill` need `writing-for-agents`, and `to-skill` also needs `review-skill`; `review-change` needs `second-opinion` and `review-dependency`; `diagnose-metric` and `size-impact` need `data-context` and `review-result`; `review-model` needs `review-result`. A skill that another skill or a playbook runs must be agent-startable (2.3).
+- **A fork brings its dependencies.** Before adopting a fork, list every skill its body calls and add each one, renamed through the map: `wayfinder` needs `look-up`, `prototype`, `grilling` and `glossary`; `architecture-health` needs `codebase-design`, `grilling` and `glossary`; `technical-writing` and `polish` need `unslop`; `brainstorm` needs `second-opinion` and `look-up`; `retro` and `to-skill` need `writing-for-agents`, and `to-skill` also needs `review-skill`; `review-change` needs `second-opinion` and `review-dependency`; `diagnose-metric` and `size-impact` need `data-context` and `review-result`; `review-model` needs `review-result`. A skill that another skill or a playbook runs must be agent-startable (2.3).
 
 ```
 agent-skills/
@@ -708,14 +708,14 @@ agent-skills/
 
 ### 10.3 Naming and triggers
 
-- **A name that pairs an action with its object leads with the verb:** `review-change`, `explore-data`, `diagnose-metric`, `size-impact`, `make-chart`, `write-notebook`, `fix-ci`, `verify-app`. Knowledge the agent reads keeps a noun (`glossary`, `data-context`, `codebase-design`, `writing-for-agents`), and so do reports on what already exists (`-health`).
+- **A name that pairs an action with its object leads with the verb:** `review-change`, `explore-data`, `diagnose-metric`, `diagnose-bug`, `size-impact`, `make-chart`, `write-notebook`, `fix-ci`, `verify-app`. Knowledge the agent reads keeps a noun (`glossary`, `data-context`, `codebase-design`, `writing-for-agents`), and so do reports on what already exists (`-health`).
 - **`review-` judges something before it is accepted** (merged, reported or adopted): `review-plan`, `review-change`, `review-feedback`, `review-result`, `review-dependency`, `review-skill`, `review-model`.
 - **`-health` examines what already exists, not just what changed, and only reports:** `architecture-health`, `code-health`.
 - **`to-` writes an artifact:** `to-product`, `to-intent`, `to-spec` and the rest.
-- **Other names say what you get, in plain words:** the moment you reach for it (`huh`, `afk`, `readback`) or the job it does (`how`, `why`, `learn`, `codify`, `polish`, `brainstorm`, `preregister`). A metaphor stays only when it is the common term (`blast-radius`) or a well-known upstream name (`wayfinder`).
+- **Other names say what you get, in plain words:** the moment you reach for it (`huh`, `afk`, `readback`) or the job it does (`how`, `why`, `look-up`, `learn`, `codify`, `polish`, `brainstorm`, `preregister`). A metaphor stays only when it is the common term (`blast-radius`) or a well-known upstream name (`wayfinder`).
 - **A name never promises the opposite of what the skill does.** In Copilot CLI and other assistants `autopilot` means "keeps going without stopping for you", so the skill that holds every gate while you are away is `afk`, after the AFK/HITL split upstream already uses.
-- **Never reuse a name a harness reserves.** Check its command list before naming a skill. Claude Code, for example, reserves `/review`, `/code-review`, `/simplify`, `/verify`, `/plan`, `/doctor`, `/checkup` and `/security-review`.
-- **Upstream names stay in the rename map**, so a renamed fork still syncs: `wtf` → `huh`, `teach` → `learn`, `skill-scanner` → `review-skill`, `ce-noslop` → `polish`, `validate-data` → `review-result`, `data-context-extractor` → `data-context`, and the rest.
+- **Never reuse a name a harness reserves.** Check its command list before naming a skill. Claude Code, for example, reserves `/review`, `/code-review`, `/simplify`, `/verify`, `/plan`, `/doctor`, `/checkup` and `/security-review`; Copilot CLI reserves `/research`, `/diagnose`, `/review`, `/plan` and `/delegate`.
+- **Upstream names stay in the rename map**, so a renamed fork still syncs: `wtf` → `huh`, `teach` → `learn`, `skill-scanner` → `review-skill`, `ce-noslop` → `polish`, `validate-data` → `review-result`, `data-context-extractor` → `data-context`, `research` → `look-up`, `diagnosing-bugs` → `diagnose-bug`, and the rest.
 - **One skill per job.** Before adding a skill, `review-skill` checks its description against the ones you have; two skills that answer the same moment merge into one.
 - **Typed skills are free until used; agent-startable skills are not.** A typed skill's description stays out of context until you type it, so a narrow skill you reach for now and then earns its place. An agent-startable skill's description loads in every session and competes with the others for triggering, so it must be used often or be run by a playbook or another skill. Check both with `/skill-doctor` in Claude Code.
 
@@ -734,7 +734,7 @@ agent-skills/
 | [Kiro specs](https://kiro.dev/docs/specs/) | Bugfix spec, quick spec |
 | [OpenSpec](https://github.com/Fission-AI/OpenSpec) | Change folders, archive into living specs |
 | [BMAD Method](https://docs.bmad-method.org/) | Product brief → requirements → architecture order, readiness check, adversarial review |
-| [mattpocock/skills](https://github.com/mattpocock/skills), [AI Hero dictionary: AFK](https://www.aihero.dev/ai-coding-dictionary/afk) | Grilling, glossary, to-spec, to-tickets, tdd, two-axis review, handoff, wayfinder, architecture survey, deep-module vocabulary, AFK/HITL split, research, teach (our `learn`), retro, to-questionnaire, writing for agents, wait-what |
+| [mattpocock/skills](https://github.com/mattpocock/skills), [AI Hero dictionary: AFK](https://www.aihero.dev/ai-coding-dictionary/afk) | Grilling, glossary, to-spec, to-tickets, tdd, two-axis review, handoff, wayfinder, architecture survey, deep-module vocabulary, AFK/HITL split, research (our `look-up`), teach (our `learn`), retro, to-questionnaire, writing for agents, wait-what |
 | [pstack](https://github.com/cursor/plugins/tree/main/pstack) | Router and playbooks, reversible vs irreversible, verification skill, structural lessons, comment review, decision trail, how, why, catch-up (in our `huh`), in-your-own-words, unslop, technical writing, explaining a number |
 | [Cursor team kit](https://github.com/cursor/plugins/tree/main/cursor-team-kit) | CI fix loop, verifying a claim with baseline and treatment |
 | [gstack](https://github.com/garrytan/gstack) | Product questioning, plan reviews with scope challenge, ship → deploy → canary, test and documentation audits, eval preregistration, destructive-command guard |

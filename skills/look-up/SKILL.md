@@ -1,5 +1,5 @@
 ---
-name: research
+name: look-up
 description: "Answers a question from primary sources outside the repo (official docs, source code, specs, first-party APIs) in a background agent and writes a cited note to docs/research/. Use when the user wants a fact researched, when a wayfinder research ticket needs resolving, or when a decision waits on an outside fact."
 license: MIT
 ---

@@ -72,7 +72,7 @@ MAX_SKILL_MD_LINES = 500
 # Characters that a value without quotes cannot start with in YAML.
 YAML_INDICATORS = "[]{}*&!%@`,"
 # A sibling reference in a skill, such as "(use huh)" or
-# "(use how, why, or research)".
+# "(use how, why, or look-up)".
 SKILL_REF_RE = re.compile(r"\(use ([^)]*)\)")
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 # A fenced code block. A link inside one is an example, not a file
@@ -340,7 +340,7 @@ def _link_issues(folder: Path, text: str) -> list[str]:
 
 def _skill_refs(text: str) -> list[str]:
     """Return the skill names in sibling references such as
-    "(use how, why, or research)"."""
+    "(use how, why, or look-up)"."""
     names = []
     for group in SKILL_REF_RE.findall(text):
         for token in re.split(r",\s*|\s+or\s+", group):

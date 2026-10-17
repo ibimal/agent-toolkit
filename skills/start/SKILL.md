@@ -42,7 +42,7 @@ change, name the skill instead of loading a playbook:
 | Why code is the way it is | `why` |
 | What a dataset holds | `explore-data` |
 | Why a number moved | `diagnose-metric` (an Incident runs it itself when an alert caught the drift) |
-| A fact from outside the repo | `research` |
+| A fact from outside the repo | `look-up` |
 | Ideas, not yet an idea | `brainstorm` |
 | An idea whose value is unclear | `size-impact`, before it becomes an intent |
 | A message to send as themselves | `polish` |

@@ -1,6 +1,6 @@
 ---
 name: diagnose-metric
-description: "Finds why a metric moved by ruling out the data before the world: data faults first, then a mix-versus-rate decomposition, segments and calendar effects, then ranked hypotheses each tested against data; ends with the drivers and each one's share of the move, checked by review-result. Use when a number dropped or jumped, inside an Incident for metric drift, or when a measured success metric misses or moves unexpectedly. Not for code that misbehaves (use diagnose)."
+description: "Finds why a metric moved by ruling out the data before the world: data faults first, then a mix-versus-rate decomposition, segments and calendar effects, then ranked hypotheses each tested against data; ends with the drivers and each one's share of the move, checked by review-result. Use when a number dropped or jumped, inside an Incident for metric drift, or when a measured success metric misses or moves unexpectedly. Not for code that misbehaves (use diagnose-bug)."
 metadata:
   inspired-by: https://github.com/anthropics/knowledge-work-plugins (analyze, variance-analysis, metrics-review)
 ---
@@ -32,5 +32,5 @@ where the question came from: the incident note for an alert, a dated note
 on the intent whose metric moved, or the conversation when the user asked.
 A code fault goes to `/start` as a Bug fix.
 
-This skill explains a number. `diagnose` explains code that misbehaves, and
-`why` traces how code came to be.
+This skill explains a number. `diagnose-bug` explains code that
+misbehaves, and `why` traces how code came to be.

@@ -54,7 +54,7 @@ sessions; its map hands back to `to-spec` or `to-design`.
 
 ## Bug fix
 
-Steps: `diagnose` (reproduce on the same surface, minimise, hypothesise,
+Steps: `diagnose-bug` (reproduce on the same surface, minimise, hypothesise,
 instrument) → a failing regression test → fix → find other instances of the
 same cause → `verify-app` → `review-change` → `ship` → `codify`.
 
@@ -83,7 +83,7 @@ Gates: the bar, the decision. Artifacts: `findings.md` or an ADR, plus
 
 ## Incident
 
-Steps: an alert from deterministic detection reaches `/start` → `diagnose`
+Steps: an alert from deterministic detection reaches `/start` → `diagnose-bug`
 (read-only), or `diagnose-metric` when a metric drifted → a small fix
 through Bug fix, or an agent-raised intent.
 
@@ -97,7 +97,7 @@ milestone release.
 
 | Step | Skills | Exit criteria | Gate |
 |---|---|---|---|
-| 1 Setup, first pass | `setup` | Docs layout, tracker and reviewer ladder committed; `CLAUDE.md` and `REVIEW.md` stubs; guard active; no empty glossary | — |
+| 1 Setup, first pass | `setup` | Docs layout, tracker and reviewer ladder committed; `AGENTS.md`, `CLAUDE.md` and `REVIEW.md` stubs; guard active; no empty glossary | — |
 | 2 Product brief | `grilling` (product level) → `to-product` | `product.md` complete, with the MVP defined by the outcome it proves; `GLOSSARY.md` created with the first settled terms | Brief accepted |
 | 3 Backlog | `to-backlog` → `size-impact` (when intents compete for the cut) → `grilling` and `to-intent` for each MVP intent → `review-plan` (scope challenge on the MVP) | Every MVP intent accepted, traced to an outcome, with a success metric and dependencies; later intents proposed in one line; open technical decisions listed | MVP intents, cut and order |
 | 4 Architecture | a Spike, or `/wayfinder` tickets, for each decision expensive to reverse → ADR; `to-design` (system) → `review-plan` | Every open decision resolved by an ADR or deferred with a reason; `architecture.md` complete; every product constraint maps to a choice | Architecture accepted |

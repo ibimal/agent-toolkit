@@ -10,3 +10,8 @@ patterns = ["Trail of Bits variant-analysis (https://github.com/trailofbits/skil
 date = "2026-10-16"
 change = "Forked as diagnose. New description (agent-startable), the line that loads local.md, and a local.md with the workflow doc's rules for this skill."
 reason = "Workflow doc, sections 4, 6 and 10.1."
+
+[[changelog]]
+date = "2026-10-17"
+change = "Renamed from diagnose to diagnose-bug."
+reason = "Copilot CLI reserves /diagnose. Workflow doc 10.3: never reuse a name a harness reserves."

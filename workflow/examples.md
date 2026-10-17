@@ -96,7 +96,7 @@ Grouped by the moment you need them, as in the workflow doc's quick reference. E
 | 4 | grilling → to-intent | Grill each MVP intent | Grills I-0001 to I-0004 only, and each term they settle joins GLOSSARY.md. Budgets and alerts stay as one-line proposals until they are picked up. | Accept each MVP intent. | — |
 | 5 | review-plan | Challenge the MVP scope | A reviewer from another model family challenges the cut (expand, hold or reduce). It proposes dropping PDF statements from the MVP; you keep them because most Indian banks email PDFs. | Decide the cut and the order. | MVP intents, cut and order |
 | 6 | Spike ×3 → ADRs | Spike what is expensive to reverse | Throwaway prototypes for the categoriser (rules vs small model vs LLM on 2,000 labelled transactions), PDF parsing on statements from five banks, and the data store. Cheap choices such as the chart library get provisional ADRs. | — | — |
-| 7 | to-design → review-plan | Write the architecture | Writes architecture.md: web front end, Python API, parser adapters, categoriser service, Postgres, staging and prod. Every guardrail maps to a choice. Reviewed through the ladder. | Accept the architecture. | Architecture accepted |
+| 7 | grilling → to-design → review-plan | Write the architecture | First grills what the brief and the spikes leave open: where to host (in India, because statements are personal data) and how much the categoriser may cost per user (G4). Then writes architecture.md: web front end, Python API, parser adapters, categoriser service, Postgres, staging and prod. Every guardrail maps to a choice. Reviewed through the ladder. | Accept the architecture. | Architecture accepted |
 | 8 | setup (stack pass) | Setup, second pass | With the stack chosen, the playbook runs setup's second pass: the AGENTS.md commands, format and lint hooks, the verify command, the health checks behind make health, REVIEW.md standards and CI. It only adds controls, so it needs no gate. | — | — |
 | 9 | to-spec → implement → ship | Build the walking skeleton | The riskiest assumption is about the categoriser, an architecture question, so the skeleton runs through the target architecture: upload one bank's CSV, parse, categorise with a single rule, store, list on a page, deploy to staging. verify-app is written alongside it. | Approve the slice spec, then merge. | Spec, merge |
 | 10 | agent-readiness check | Check the repo is agent-ready | A fresh agent session, given only the repo, states the commands, conventions and architecture and runs verify-app green. The check becomes the first eval case. Parallel work is now allowed. | — | — |
@@ -220,7 +220,7 @@ Households  I-0014 Split shared expenses   ← I-0013
 | 3 | setup | Controls and standards | Installs the guard, and puts the ruff, mypy and pytest runs the repo already has behind make health. REVIEW.md starts from the baseline and records what the code already follows. Existing CI stays and gains a health job. | — | — |
 | 4 | setup → verify-app | Prove it runs | Writes verify-app from the existing fixtures: it parses three sample statements end to end and checks their totals. It passes from a clean clone. | — | — |
 | 5 | setup → grilling → to-product | Draft the brief from what exists | Drafts the brief from the README, the code and the open issues, describing the service as it is. The grilling settles statement, format version and adapter, which start the glossary. | Accept the brief. | Brief accepted |
-| 6 | setup → to-design | Draft the architecture as it is | Drafts architecture.md from the code: a queue consumer, one adapter per bank behind a common interface, and a normaliser. Two existing decisions are hard to reverse and surprising, so they become ADRs. | Accept the architecture. | Architecture accepted |
+| 6 | setup → grilling → to-design | Draft the architecture as it is | Drafts architecture.md from the code: a queue consumer, one adapter per bank behind a common interface, and a normaliser. The code cannot show intent, so the grilling asks two things: is Bank C's adapter, which skips the normaliser, deliberate (no, a workaround to remove), and must the consumer scale out (yes, at month end). Two existing decisions are hard to reverse and surprising, so they become ADRs. | Accept the architecture. | Architecture accepted |
 | 7 | architecture-health → code-health | Baseline health sweep | Both run a full sweep, so the health ledger starts with every area at today's commit. Nothing is changed; the findings wait for your pick. | — | — |
 | 8 | agent-readiness | Agent-readiness check | A fresh session, given only the repo, states the commands, conventions and architecture, and runs verify-app. It passes, but the service has no deploy command yet, so parallel worktrees and AFK runs wait; the setup report lists it. | — | — |
 | 9 | start | Back to the request | Bank E's format is one new adapter behind the existing interface, so the router picks Feature S. The old issues still wait in GitHub; each becomes an intent or a Bug fix only when /start picks it up. | — | Feature S: merge |
@@ -253,6 +253,7 @@ Components: queue consumer → bank adapters → normaliser
 Areas: consumer, adapters, normaliser, docs
 ADR 0001 One format version per bank
 ADR 0002 Raw files stay in memory, never on disk
+Known workaround: Bank C bypasses the normaliser
 ```
 `docs/sdlc/health-ledger.md`
 ```
@@ -442,7 +443,7 @@ ADR 0011: aggregator API, not screen scraping
 | # | Skills | Step | What happens | You | Gate |
 |---|---|---|---|---|---|
 | 1 | diagnose-bug | Reproduce and narrow down | Reproduces on the same surface: uploads a statement with a payment at 23:10 IST on 31 Jan and opens January; it is missing. Minimises to the month-bucketing code and instruments it. | — | — |
-| 2 | tdd | Write the failing test | A regression test for the 23:10 case fails for the expected reason, plus a property test: every transaction lands in exactly one month, in any timezone. A hook now blocks edits to the regression test during the fix. | — | — |
+| 2 | tdd | Write the failing test | A regression test for the 23:10 case fails for the expected reason, plus a property test: every transaction lands in exactly one month, in any timezone. Its path goes into docs/sdlc/locks, so the guard blocks edits to it until the fix is verified. | — | — |
 | 3 | fix | Fix | The parser stores times with the statement's timezone, using the standard library's zoneinfo. The agent's first attempt added a timezone package; review-dependency turned it down (see its example). | — | — |
 | 4 | diagnose-bug | Find other instances | Searches for the same cause elsewhere: the recurring-payment detector also builds naive datetimes, in two places. Both are fixed in the same change, each with a test. | — | — |
 | 5 | verify-app | Verify | Re-uploads the fixture: the January total is now ₹48,920, matching the bank. | — | — |

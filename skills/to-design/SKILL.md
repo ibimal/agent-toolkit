@@ -31,7 +31,11 @@ The design and the plan are accepted together at the Feature L gate.
 
 ## System mode: architecture.md
 
-At New application step 4, write `docs/sdlc/architecture.md`:
+First, grill the user (`grilling`, with `glossary`) on the choices that the
+brief, the backlog, the spikes and the ADRs leave open, such as hosting,
+cost limits and which boundaries must stay stable. Settle every point you
+would otherwise guess. Then, at New application step 4, write
+`docs/sdlc/architecture.md`:
 
 - components and their boundaries;
 - the core data model;
@@ -48,7 +52,8 @@ set, the quality thresholds and the data contracts here; they become part
 of `verify-app`. The user accepts the architecture at a gate.
 
 **An existing project.** At adoption, describe the architecture as it is,
-not as it should be. Record an existing decision as an ADR only when it is
+not as it should be, and grill the user on what the code cannot show, such
+as whether an odd structure is deliberate or a workaround. Record an existing decision as an ADR only when it is
 hard to reverse and surprising, and link existing decision records instead
 of moving them.
 

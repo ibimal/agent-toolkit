@@ -89,7 +89,9 @@ intents later.
    code and open issues. Grill the draft with the user (`grilling`, with
    `glossary`), and `to-product` writes it. Gate: brief accepted.
 4. **Architecture.** Draft `docs/sdlc/architecture.md` from the code as it
-   is, and `to-design` in system mode finishes it. Record existing decisions
+   is. Grill the user on what the code cannot show: the intended
+   boundaries, environments and deployment, and what is being retired.
+   Then `to-design` in system mode finishes it. Record existing decisions
    that are hard to reverse and surprising as ADRs, and link existing
    decision records instead of moving them. Gate: architecture accepted.
 5. **Baseline health.** Run `architecture-health`, then `code-health`, as a

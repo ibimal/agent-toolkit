@@ -101,7 +101,7 @@ milestone release.
 | 1 Setup, first pass | `setup` | Docs layout, tracker and reviewer ladder committed; `AGENTS.md`, `CLAUDE.md` and `REVIEW.md` stubs; guard active; no empty glossary | — |
 | 2 Product brief | `grilling` (product level) → `to-product` | `product.md` complete, with the MVP defined by the outcome it proves; `GLOSSARY.md` created with the first settled terms | Brief accepted |
 | 3 Backlog | `to-backlog` → `size-impact` (when intents compete for the cut) → `grilling` and `to-intent` for each MVP intent → `review-plan` (scope challenge on the MVP) | Every MVP intent accepted, traced to an outcome, with a success metric and dependencies; later intents proposed in one line; open technical decisions listed | MVP intents, cut and order |
-| 4 Architecture | a Spike, or `/wayfinder` tickets, for each decision expensive to reverse → ADR; `to-design` (system) → `review-plan` | Every open decision resolved by an ADR or deferred with a reason; `architecture.md` complete; every product constraint maps to a choice | Architecture accepted |
+| 4 Architecture | a Spike, or `/wayfinder` tickets, for each decision expensive to reverse → ADR; `grilling` (what the brief, backlog and spikes leave open) → `to-design` (system) → `review-plan` | Every open decision resolved by an ADR or deferred with a reason; `architecture.md` complete; every product constraint maps to a choice | Architecture accepted |
 | 5 Walking skeleton | `setup` (stack pass) → `to-spec` (thinnest slice of the first MVP intent) → `to-tickets` → `implement` (one stream; writes `verify-app`) → `tidy` → `verify-app` → `review-change` → `ship` to staging | One command builds and tests from a clean clone; CI green; staging deploy and rollback each run once; hooks active; agent-readiness check passes | Spec, merge |
 | 6 Build | `/start` for each MVP intent in dependency order → Feature S, M or L | All MVP intents merged; living specs and `architecture.md` current | Per playbook |
 | 7 Release | `release-readiness` → `ship` to production (staged) → measure (`review-result`) | Readiness check passes; post-deploy check passes; MVP intents move to measuring; milestone review scheduled | Production |
@@ -145,7 +145,7 @@ has code. It is not a route; the request that started it routes afterwards.
 | 1 Setup, both passes: merge existing instruction files into `AGENTS.md`, link the existing tracker, wrap the existing tools in the health command | `setup` | — |
 | 2 Verify | `setup` → `verify-app` | — |
 | 3 Product brief, drafted from what exists | `setup` → `grilling` → `to-product` | Brief accepted |
-| 4 Architecture, as it is | `setup` → `to-design` (system) | Architecture accepted |
+| 4 Architecture, as it is | `setup` → `grilling` (what the code cannot show) → `to-design` (system) | Architecture accepted |
 | 5 Baseline health, full sweep | `architecture-health` → `code-health` | Findings wait for your pick |
 | 6 Agent-readiness check | a fresh session | — |
 

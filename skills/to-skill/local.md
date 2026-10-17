@@ -17,7 +17,9 @@ instructions in SKILL.md, and they win where the two differ.
   agent-startable skill's description loads in every session, so it must be
   used often or be run by a playbook or another skill.
 - **Body.** Write it with `writing-for-agents`.
-- **Evals.** Add eval cases in `evals/skills/<name>/`.
+- **Evals.** Add eval cases in the repo's `evals/skills/<name>/`, not in an
+  `evals/` folder inside the skill, so an installed skill carries no eval
+  data.
 - **Review.** Run `review-skill` before the skill is trusted. A new skill
   that overlaps one the user already has is merged into it or dropped.
 - **Forks.** For a fork, change only `local.md`; the upstream body stays as
